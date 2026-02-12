@@ -1,0 +1,233 @@
+{
+  "schemaVersion": "1.0.0",
+  "projectStateVersion": 5,
+  "summary": "Frontend-only premium animated demo website built with React (Vite), Tailwind CSS, Framer Motion, and React Router, featuring localStorage-simulated authentication, admin approval workflow, protected routes, dark luxury glassmorphism UI, and pages for Home, Telus Videos, Portfolio iframe, and Admin user management.",
+  "architectural_notes": [
+    "Frontend-only; no backend/server/external DB. All data persisted in localStorage (users + session).",
+    "On app load, ensure predefined admin exists and remains approved by default.",
+    "Use React Router for routes and route protection; redirect unauthenticated to /login; restrict /admin to admin role.",
+    "Use Framer Motion for consistent 0.5s transitions, hover states, and route/page animations.",
+    "Maintain modular structure: src/, components/, pages/, utils/ with consistent UI styling."
+  ],
+  "known_issues": [],
+  "isFixRequest": false,
+  "imageRequirements": "## Required Images\n- Cute cartoon baby character illustration, front-facing, smiling/laughing, transparent background (baby-laugh.dim_512x512.png)\n- Small heart/kiss overlay icons set, transparent background (kiss-hearts.dim_256x256.png)\n- Small motion streaks/dust puffs for running effect, transparent background (run-streaks.dim_256x256.png)",
+  "existing_features": [
+    {
+      "id": "feature-implement-a-frontend-only-app-experience-no-backend-calls-no-server-side-state-no-external-databases-where-all-authentication-session-handling-and-admin-approval-logic-is-simulated-strictly-using-localstorage",
+      "title": "Implement a frontend-only app experience (no backend calls, no server-side state, no external databases) where all authentication, session handling, and admin approval logic is simulated strictly using localStorage.",
+      "reqIds": [
+        "REQ-1"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-establish-and-apply-a-consistent-dark-luxury-visual-system-across-all-pages-primary-background-color-0a1f44-neon-blue-accent-highlights-glassmorphism-ui-elements-inter-font-smooth-0-5s-transitions-animated-hover-states-glowing-buttons-and-a-fully-responsive-layout",
+      "title": "Establish and apply a consistent dark luxury visual system across all pages: primary background color #0A1F44, neon-blue accent highlights, glassmorphism UI elements, Inter font, smooth 0.5s transitions, animated hover states, glowing buttons, and a fully responsive layout.",
+      "reqIds": [
+        "REQ-2"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-create-a-clean-modular-frontend-folder-structure-with-src-components-pages-and-utils-plus-any-necessary-subfolders-while-keeping-ui-consistency-across-the-app",
+      "title": "Create a clean, modular frontend folder structure with src/, components/, pages/, and utils/ (plus any necessary subfolders) while keeping UI consistency across the app.",
+      "reqIds": [
+        "REQ-3"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-on-first-application-load-check-localstorage-and-automatically-create-a-predefined-admin-account-if-it-does-not-already-exist-with-email-admin-example-com-password-admin123-role-admin-status-approved-registeredat-timestamp-ensure-this-admin-always-remains-approved-by-default",
+      "title": "On first application load, check localStorage and automatically create a predefined admin account if it does not already exist with: email=admin@example.com, password=admin123, role=admin, status=approved, registeredAt timestamp. Ensure this admin always remains approved by default.",
+      "reqIds": [
+        "REQ-4"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-implement-a-registration-page-where-users-can-register-with-name-email-and-password-on-registration-store-the-user-in-localstorage-with-fields-name-email-password-plain-string-for-demo-role-user-status-pending-registeredat-timestamp-registration-itself-must-act-as-the-approval-request-with-no-separate-request-or-re-request-flow",
+      "title": "Implement a Registration page where users can register with name, email, and password. On registration, store the user in localStorage with fields: name, email, password (plain string for demo), role='user', status='pending', registeredAt timestamp. Registration itself must act as the approval request with no separate request or re-request flow.",
+      "reqIds": [
+        "REQ-5"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-implement-a-login-page-that-validates-email-and-password-against-localstorage-if-credentials-do-not-match-show-an-error-if-credentials-match-but-status-is-pending-or-rejected-block-login-and-display-exactly-your-account-is-waiting-for-admin-approval-only-allow-login-if-status-is-approved",
+      "title": "Implement a Login page that validates email and password against localStorage. If credentials do not match, show an error. If credentials match but status is pending or rejected, block login and display exactly: \"Your account is waiting for admin approval.\" Only allow login if status is approved.",
+      "reqIds": [
+        "REQ-6"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-create-session-handling-in-localstorage-on-successful-login-and-implement-protected-routing-redirect-unauthenticated-users-to-the-login-page-and-after-successful-login-redirect-to-the-home-dashboard-with-a-smooth-fade-animation-using-framer-motion",
+      "title": "Create session handling in localStorage on successful login and implement protected routing: redirect unauthenticated users to the login page, and after successful login redirect to the Home dashboard with a smooth fade animation using Framer Motion.",
+      "reqIds": [
+        "REQ-7"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-after-login-display-a-sticky-glassmorphism-navbar-with-links-home-telus-dropdown-containing-videos-and-portfolio-admin-visible-only-for-admin-role-and-logout-clicking-admin-navigates-directly-to-admin-implement-logout-to-clear-session-from-localstorage-and-redirect-to-login-with-smooth-animation",
+      "title": "After login, display a sticky glassmorphism navbar with links: Home, Telus (dropdown containing Videos and Portfolio), Admin (visible only for admin role), and Logout. Clicking Admin navigates directly to /admin. Implement Logout to clear session from localStorage and redirect to login with smooth animation.",
+      "reqIds": [
+        "REQ-8"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-implement-route-level-access-control-for-admin-if-a-non-admin-user-attempts-to-access-admin-including-manual-url-entry-redirect-them-to-home",
+      "title": "Implement route-level access control for /admin: if a non-admin user attempts to access /admin (including manual URL entry), redirect them to Home.",
+      "reqIds": [
+        "REQ-9"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-build-the-home-dashboard-page-to-show-a-welcome-message-including-the-logged-in-user-s-name-and-email-and-display-three-animated-premium-glass-cards-labeled-my-files-my-videos-notes-each-with-hover-lift-and-neon-border-effects",
+      "title": "Build the Home dashboard page to show a welcome message including the logged-in user’s name and email, and display three animated premium glass cards labeled: My Files, My Videos, Notes, each with hover lift and neon border effects.",
+      "reqIds": [
+        "REQ-10"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-create-the-telus-videos-page-with-a-responsive-grid-containing-three-embedded-youtube-videos-each-inside-an-animated-dark-blue-themed-glass-card-with-staggered-entrance-animations-using-framer-motion-0-5s-transitions",
+      "title": "Create the Telus Videos page with a responsive grid containing three embedded YouTube videos, each inside an animated dark-blue themed glass card, with staggered entrance animations using Framer Motion (0.5s transitions).",
+      "reqIds": [
+        "REQ-11"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-create-the-portfolio-page-that-embeds-https-gorleprasanth-github-io-portfolio-in-a-responsive-iframe-and-apply-smooth-route-transition-animation-using-framer-motion-0-5s",
+      "title": "Create the Portfolio page that embeds https://gorleprasanth.github.io/portfolio/ in a responsive iframe and apply smooth route transition animation using Framer Motion (0.5s).",
+      "reqIds": [
+        "REQ-12"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-implement-the-admin-panel-at-admin-to-show-a-table-of-all-users-with-role-user-from-localstorage-with-columns-name-email-status-registration-time-actions-status-must-render-as-animated-badges-pending-glowing-neon-blue-badge-labeled-awaiting-approval-approved-active-badge-rejected-rejected-badge-provide-approve-and-reject-actions-that-instantly-update-the-user-s-status-in-localstorage-and-update-the-ui-without-page-refresh",
+      "title": "Implement the Admin panel at /admin to show a table of all users with role='user' from localStorage, with columns: Name, Email, Status, Registration Time, Actions. Status must render as animated badges: pending => glowing neon blue badge labeled 'Awaiting Approval'; approved => 'Active' badge; rejected => 'Rejected' badge. Provide Approve and Reject actions that instantly update the user’s status in localStorage and update the UI without page refresh.",
+      "reqIds": [
+        "REQ-13"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-ensure-that-once-a-user-is-approved-by-admin-they-can-log-in-normally-without-any-additional-approval-request-cycle-users-remain-blocked-when-pending-or-rejected-with-the-same-exact-message-specified-for-blocked-login",
+      "title": "Ensure that once a user is approved by admin, they can log in normally without any additional approval request cycle; users remain blocked when pending or rejected with the same exact message specified for blocked login.",
+      "reqIds": [
+        "REQ-14"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-use-framer-motion-for-all-required-animations-and-keep-the-transition-duration-consistent-at-0-5s-across-page-transitions-and-key-ui-interactions-without-breaking-the-overall-layout-and-ui-consistency",
+      "title": "Use Framer Motion for all required animations and keep the transition duration consistent at 0.5s across page transitions and key UI interactions, without breaking the overall layout and UI consistency.",
+      "reqIds": [
+        "REQ-15"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-add-a-playful-comedic-baby-themed-animated-sequence-to-the-login-page-that-visually-conveys-baby-laughter-plus-motion-beats-like-moving-running-and-kissing-e-g-hearts-while-keeping-the-existing-login-form-fully-functional-and-readable",
+      "title": "Add a playful, comedic baby-themed animated sequence to the Login page that visually conveys “baby laughter” plus motion beats like moving/running and kissing (e.g., hearts), while keeping the existing login form fully functional and readable.",
+      "reqIds": [
+        "REQ-16"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-implement-the-login-page-baby-themed-animation-using-framer-motion-with-consistent-0-5s-transition-timing-for-entrance-and-key-motion-beats-and-ensure-it-is-responsive-works-on-mobile-and-desktop-without-overflowing-the-login-card-container",
+      "title": "Implement the Login page baby-themed animation using Framer Motion with consistent 0.5s transition timing for entrance and key motion beats, and ensure it is responsive (works on mobile and desktop without overflowing the login card/container).",
+      "reqIds": [
+        "REQ-17"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-add-generated-static-visual-assets-illustrations-overlays-required-for-the-baby-themed-animation-under-frontend-public-assets-generated-and-render-them-directly-from-the-frontend-no-backend-routing",
+      "title": "Add generated static visual assets (illustrations/overlays) required for the baby-themed animation under frontend/public/assets/generated and render them directly from the frontend (no backend routing).",
+      "reqIds": [
+        "REQ-18"
+      ],
+      "version": 1
+    }
+  ],
+  "new_feature_requests": [
+    {
+      "id": "AR-1",
+      "summary": "Set up React (Vite) app with Tailwind CSS, Framer Motion, React Router, Inter font, dark luxury glassmorphism theme (#0A1F44, neon blue accents) and consistent 0.5s transitions across responsive UI",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-2",
+      "summary": "Implement localStorage-based auth simulation: auto-create predefined approved admin on first load (admin@example.com/admin123) with role/status/registeredAt",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-3",
+      "summary": "Create Registration page storing users in localStorage (name/email/password plain string, role=user, status=pending, registeredAt) with registration acting as approval request (no re-request flow)",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-4",
+      "summary": "Create Login page validating localStorage credentials; block pending/rejected with exact message \"Your account is waiting for admin approval.\"; allow only approved; store session in localStorage; smooth redirect to Home; protect private routes",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-5",
+      "summary": "Post-login UI: sticky glassmorphism navbar with Home, Telus dropdown (Videos, Portfolio), Admin (admin-only), Logout; enforce /admin access control (non-admin redirect Home)",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-6",
+      "summary": "Home dashboard showing welcome (name/email) and three animated glass cards (My Files, My Videos, Notes) with hover lift and neon border effects",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-7",
+      "summary": "Telus Videos page with responsive grid of three embedded YouTube videos in animated glass cards with staggered entrance animation",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-8",
+      "summary": "Portfolio page embedding https://gorleprasanth.github.io/portfolio/ in responsive iframe with smooth route transition animation",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-9",
+      "summary": "Admin panel at /admin listing all role=user accounts in a table (Name, Email, Status, Registration Time, Actions) with animated status badges and Approve/Reject buttons updating localStorage and UI instantly",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-10",
+      "summary": "Logout clears session from localStorage and redirects to Login with smooth animation",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-11",
+      "summary": "Add a playful/comedic animated baby-themed sequence on the Login page (e.g., baby laughter + moving/running/kissing animation) to enhance the user experience",
+      "reqIds": [],
+      "status": "pending"
+    }
+  ],
+  "gameProjectType": "none",
+  "projectName": "Premium dark-luxury animated frontend demo with localStorage auth + admin approval",
+  "clarification_mode": "instant",
+  "clarification_rounds": 0
+}

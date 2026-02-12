@@ -1,0 +1,62 @@
+{
+  "kind": "feature_evidence_report",
+  "features": [
+    {
+      "featureId": "feature-add-a-playful-comedic-baby-themed-animated-sequence-to-the-login-page-that-visually-conveys-baby-laughter-plus-motion-beats-like-moving-running-and-kissing-e-g-hearts-while-keeping-the-existing-login-form-fully-functional-and-readable",
+      "featureTitle": "Add a playful, comedic baby-themed animated sequence to the Login page that visually conveys “baby laughter” plus motion beats like moving/running and kissing (e.g., hearts), while keeping the existing login form fully functional and readable.",
+      "files": [
+        "frontend/src/components/motion/BabyComedyLoginAnimation.tsx",
+        "frontend/src/pages/LoginPage.tsx"
+      ],
+      "components": [
+        "core-infrastructure@1.0.2",
+        "shadcn-ui@1.0.0",
+        "build-template-react@1.0.0",
+        "initial-app@1.0.0",
+        "github-export-icp-cli@1.0.0"
+      ],
+      "testIds": [
+        "REQ-16"
+      ],
+      "confidence": "high"
+    },
+    {
+      "featureId": "feature-implement-the-login-page-baby-themed-animation-using-framer-motion-with-consistent-0-5s-transition-timing-for-entrance-and-key-motion-beats-and-ensure-it-is-responsive-works-on-mobile-and-desktop-without-overflowing-the-login-card-container",
+      "featureTitle": "Implement the Login page baby-themed animation using Framer Motion with consistent 0.5s transition timing for entrance and key motion beats, and ensure it is responsive (works on mobile and desktop without overflowing the login card/container).",
+      "files": [
+        "frontend/src/components/motion/BabyComedyLoginAnimation.tsx",
+        "frontend/src/pages/LoginPage.tsx",
+        "frontend/src/utils/motion.ts"
+      ],
+      "components": [
+        "core-infrastructure@1.0.2",
+        "shadcn-ui@1.0.0",
+        "build-template-react@1.0.0",
+        "initial-app@1.0.0",
+        "github-export-icp-cli@1.0.0"
+      ],
+      "testIds": [
+        "REQ-17"
+      ],
+      "confidence": "high"
+    },
+    {
+      "featureId": "feature-add-generated-static-visual-assets-illustrations-overlays-required-for-the-baby-themed-animation-under-frontend-public-assets-generated-and-render-them-directly-from-the-frontend-no-backend-routing",
+      "featureTitle": "Add generated static visual assets (illustrations/overlays) required for the baby-themed animation under frontend/public/assets/generated and render them directly from the frontend (no backend routing).",
+      "files": [
+        "frontend/src/components/motion/BabyComedyLoginAnimation.tsx"
+      ],
+      "components": [
+        "core-infrastructure@1.0.2",
+        "shadcn-ui@1.0.0",
+        "build-template-react@1.0.0",
+        "initial-app@1.0.0",
+        "github-export-icp-cli@1.0.0"
+      ],
+      "testIds": [
+        "REQ-18"
+      ],
+      "confidence": "high"
+    }
+  ]
+}

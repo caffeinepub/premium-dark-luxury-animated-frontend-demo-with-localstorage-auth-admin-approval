@@ -1,0 +1,86 @@
+{
+  "kind": "implementation_plan",
+  "version": "1.0",
+  "title": "Playful baby-themed Framer Motion animation on Login page",
+  "requirements": [
+    {
+      "id": "REQ-16",
+      "summary": "Add a visible baby-themed comedic animation section to the Login page without impacting existing form behavior, readability, or interactions.",
+      "acceptanceCriteria": [
+        "The Login page shows a clearly visible baby-themed animation section on initial load.",
+        "The animation includes distinct, readable visual beats that suggest: laughter, moving/running, and kissing/hearts.",
+        "The login form (email/password, submit, errors) works exactly as before and remains the primary actionable UI.",
+        "The animation does not block typing/clicking on any inputs or buttons and does not cause layout shift that hides the form."
+      ],
+      "file_operations": [
+        {
+          "path": "frontend/src/components/motion/BabyComedyLoginAnimation.tsx",
+          "operation": "create",
+          "description": "Create a self-contained baby-themed comedic animation component for the Login page that visually conveys laughter (bouncy/joyful beats), running/motion (streaks/dust), and kissing/hearts (heart pop overlays). Ensure the animation layer uses non-interactive presentation (e.g., no pointer capture) so it cannot block form interactions."
+        },
+        {
+          "path": "frontend/src/pages/LoginPage.tsx",
+          "operation": "modify",
+          "description": "Compose the new baby-themed animation component into the existing Login page layout while keeping the login form logic, validation, and error messaging unchanged. Place the animation in a dedicated section within the existing glass panel so the form remains the primary actionable UI and remains fully readable."
+        }
+      ]
+    },
+    {
+      "id": "REQ-17",
+      "summary": "Implement the Login baby-themed animation using Framer Motion with consistent 0.5s timing and responsive behavior that never overflows the login container.",
+      "acceptanceCriteria": [
+        "Framer Motion is used for the new Login page animation elements (not only CSS keyframes).",
+        "Entrance and interaction/motion transitions used for the new sequence are consistent with 0.5s duration (matching the app’s animation standard).",
+        "On small screens, the animation scales/reflows so the login form remains fully visible without horizontal scrolling."
+      ],
+      "file_operations": [
+        {
+          "path": "frontend/src/utils/motion.ts",
+          "operation": "modify",
+          "description": "Define shared motion constants/utilities for the app (e.g., a single 0.5s duration value and a standard transition config) to enforce consistent timing across the new Login animation beats."
+        },
+        {
+          "path": "frontend/src/components/motion/BabyComedyLoginAnimation.tsx",
+          "operation": "modify",
+          "description": "Implement the animation using Framer Motion primitives and the shared 0.5s transition timing from frontend/src/utils/motion.ts. Ensure the component is responsive (scales down, uses container-bounded sizing, and prevents overflow) so it fits within the login card/container on mobile and desktop."
+        },
+        {
+          "path": "frontend/src/pages/LoginPage.tsx",
+          "operation": "modify",
+          "description": "Adjust the Login page composition (layout and spacing only) to accommodate the animation section without introducing horizontal scrolling or layout shift that could hide the form. Keep all auth rules and blocked-login messaging behavior exactly as-is."
+        }
+      ]
+    },
+    {
+      "id": "REQ-18",
+      "summary": "Add required generated static assets under frontend/public/assets/generated and render them via static frontend paths (no backend usage).",
+      "acceptanceCriteria": [
+        "All new images are stored in frontend/public/assets/generated.",
+        "The Login page references these assets via static paths and the animation renders correctly in production builds.",
+        "No backend or remote image hosting is introduced for these assets."
+      ],
+      "file_operations": [
+        {
+          "path": "frontend/public/assets/generated/baby-laugh.dim_512x512.png",
+          "operation": "create",
+          "description": "Add generated static image asset for the baby character illustration (transparent background) at frontend/public/assets/generated/baby-laugh.dim_512x512.png and ensure it is committed as a frontend static asset."
+        },
+        {
+          "path": "frontend/public/assets/generated/kiss-hearts.dim_256x256.png",
+          "operation": "create",
+          "description": "Add generated static image asset for heart/kiss overlay icons (transparent background) at frontend/public/assets/generated/kiss-hearts.dim_256x256.png and ensure it is committed as a frontend static asset."
+        },
+        {
+          "path": "frontend/public/assets/generated/run-streaks.dim_256x256.png",
+          "operation": "create",
+          "description": "Add generated static image asset for running motion streaks/dust puffs (transparent background) at frontend/public/assets/generated/run-streaks.dim_256x256.png and ensure it is committed as a frontend static asset."
+        },
+        {
+          "path": "frontend/src/components/motion/BabyComedyLoginAnimation.tsx",
+          "operation": "modify",
+          "description": "Reference and render the new static assets using direct static paths to frontend/public/assets/generated/baby-laugh.dim_512x512.png, frontend/public/assets/generated/kiss-hearts.dim_256x256.png, and frontend/public/assets/generated/run-streaks.dim_256x256.png within the Framer Motion sequence, without introducing any backend routing or remote hosting."
+        }
+      ]
+    }
+  ]
+}
