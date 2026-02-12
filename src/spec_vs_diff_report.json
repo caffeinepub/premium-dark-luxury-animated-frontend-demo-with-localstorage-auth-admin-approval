@@ -1,30 +1,57 @@
 {
   "kind": "spec_vs_diff_report",
   "version": "1.0",
-  "generatedAt": "2026-02-12T21:23:02.917Z",
-  "summary": "The diff adds a new React entry module (frontend/src/main.authz.tsx) that wraps <App /> with AuthzProvider (alongside QueryClientProvider and InternetIdentityProvider) and updates frontend/index.html to load this new entry file. No evidence in the diff indicates changes to frontend/src/App.tsx or the immutable frontend/src/main.tsx. However, the diff also introduces unrelated visual/UX changes in index.html (critical CSS) and modifies project_state.json, neither of which were requested.",
-  "missing_requirements": [],
-  "hallucinated_features": [
+  "generatedAt": "2026-02-12T23:55:16.582Z",
+  "summary": "The diff does not implement Firebase initialization or Firebase Auth email/password login. `frontend/src/firebase.ts` still exports `auth`/`db` as null placeholders, and `LoginPage.tsx` still authenticates against localStorage via `getUser(email)` and `user.password !== password`. LocalStorage seeding/credential checks are not removed or bypassed.",
+  "missing_requirements": [
     {
-      "description": "Added/changed critical inline CSS in index.html to prevent white flash on load (background/color styling). This is a visual/design change not requested and is listed as a non-goal.",
-      "reason": "BuildRequest explicitly lists changing visual design/layout/animations as non-goals; adding new global/critical CSS in the HTML entry is not necessary to wrap the app with AuthzProvider.",
+      "id": "REQ-63",
+      "requirement": "Replace the placeholder Firebase module with real Firebase initialization using the exact provided firebaseConfig, and export working Firebase instances (at minimum `auth` and `db`) instead of null placeholders.",
+      "reason": "`frontend/src/firebase.ts` still exports `db = null` and `auth = null` and does not show any Firebase SDK initialization (e.g., initializeApp/getAuth/getFirestore).",
       "evidence": [
-        "frontend/index.html"
+        "frontend/src/firebase.ts"
       ]
     },
     {
-      "description": "Modified project_state.json with scope/summary content unrelated to wrapping the app with AuthzProvider.",
-      "reason": "BuildRequest only asks for a new entry file and updating index.html; no requirement mentions changing project_state.json.",
+      "id": "REQ-64",
+      "requirement": "Update `frontend/src/pages/LoginPage.tsx` to authenticate using Firebase Authentication (email/password) instead of validating credentials against localStorage users; after Firebase sign-in, fetch the user record from the app’s authorization storage source and populate in-memory authz state via `setAuthzState(...)`, preserving required error messages and navigation behavior.",
+      "reason": "Login logic still uses localStorage lookup (`getUser(email)`) and compares plaintext password (`user.password !== password`), with no Firebase Auth sign-in call present in the shown changes.",
       "evidence": [
+        "frontend/src/pages/LoginPage.tsx"
+      ]
+    },
+    {
+      "id": "REQ-65",
+      "requirement": "Remove or bypass any localStorage-only admin seeding and/or localStorage credential checks that can interfere with Firebase admin login diagnostics, ensuring Firebase Auth alone determines authentication success/failure.",
+      "reason": "The login flow still relies on localStorage credential checks (`getUser` + password comparison), which means localStorage-seeded users can still determine authentication outcomes. No diff evidence shows removing/bypassing seeding or localStorage credential checks.",
+      "evidence": [
+        "frontend/src/pages/LoginPage.tsx",
+        "frontend-file-summaries.txt (mentions seedAdmin on mount; no shown change removing it)"
+      ]
+    }
+  ],
+  "hallucinated_features": [
+    {
+      "description": "Added explanatory comments stating Firebase SDK packages are not installed and therefore the module continues to export null placeholders.",
+      "reason": "The BuildRequest asks to wire real Firebase config and Auth sign-in; adding rationale for keeping placeholders is not a requested feature and conflicts with the intended fix.",
+      "evidence": [
+        "frontend/src/firebase.ts"
+      ]
+    },
+    {
+      "description": "Modified `frontend-file-summaries.txt` and `project_state.json` (project metadata/summaries) without any explicit request to update project documentation/state files as part of the login fix.",
+      "reason": "The BuildRequest only requests functional changes to Firebase module and Login flow and constraints around UI/entry files; it does not request updating meta summary/state files.",
+      "evidence": [
+        "frontend-file-summaries.txt",
         "project_state.json"
       ]
     }
   ],
-  "confidence": 0.74,
+  "confidence": 0.78,
   "changed_files": [
     "frontend-file-summaries.txt",
-    "frontend/index.html",
-    "frontend/src/main.authz.tsx",
+    "frontend/src/firebase.ts",
+    "frontend/src/pages/LoginPage.tsx",
     "project_state.json"
   ]
 }

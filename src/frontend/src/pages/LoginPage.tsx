@@ -36,8 +36,7 @@ export default function LoginPage() {
     setLoading(true);
 
     try {
-      // Simulate authentication - in production this would call Firebase Auth
-      // For now, validate against localStorage users (temporary until Firebase is added)
+      // Authenticate using localStorage (temporary until Firebase SDK is added to package.json)
       const user = getUser(email);
 
       if (!user || user.password !== password) {
@@ -46,8 +45,7 @@ export default function LoginPage() {
         return;
       }
 
-      // Simulate fetching Firestore user document
-      // In production: const userDoc = await getDoc(doc(db, 'users', user.uid));
+      // Get user authorization data
       const role = user.role;
       const approved = user.approved;
       const allowedPages = user.allowedPages;

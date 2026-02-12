@@ -1,11 +1,12 @@
 # Specification
 
 ## Summary
-**Goal:** Fix the runtime crash by ensuring the entire React component tree is wrapped by `AuthzProvider` at the root entry point.
+**Goal:** Fix admin login failures by wiring the app to the correct Firebase project and switching the Login page to real Firebase email/password authentication (without changing the page UI).
 
 **Planned changes:**
-- Create a new React entry module (e.g., `frontend/src/main.authz.tsx`) that mirrors the provider composition from `frontend/src/main.tsx` and adds `AuthzProvider` so it wraps the router-rendered `<App />`.
-- Update `frontend/index.html` to load the new entry module instead of `./src/main.tsx`.
-- Keep `frontend/src/App.tsx` unchanged and avoid modifying the immutable `frontend/src/main.tsx`.
+- Replace placeholder exports in `frontend/src/firebase.ts` with real Firebase initialization using the exact user-provided `firebaseConfig`, and export working Firebase instances (at minimum `auth` and `db`).
+- Update `frontend/src/pages/LoginPage.tsx` to sign in via Firebase Authentication (email/password) instead of localStorage credential validation, while keeping the current layout and mapping errors to the existing messages.
+- After successful Firebase sign-in, load the signed-in user’s authorization record from the app’s existing user storage source and populate in-memory authorization via `setAuthzState(...)` so navbar/route guards work.
+- Remove or bypass localStorage-only admin seeding/credential checks so seeded users (e.g., admin@example.com/admin123) do not affect Firebase login outcomes.
 
-**User-visible outcome:** The app loads and all routes (public and protected) render without the error `useAuthzState must be used within an AuthzProvider`.
+**User-visible outcome:** Users can sign in with their Firebase Auth email/password; invalid credentials show “Invalid email or password”, and unapproved non-admin users see “Your account is waiting for admin approval.” Navigation and protected routes reflect the signed-in user’s authorization state.

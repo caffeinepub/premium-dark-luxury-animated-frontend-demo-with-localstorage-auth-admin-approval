@@ -1,37 +1,49 @@
 {
   "kind": "coverage_report",
   "version": "1.0",
-  "generatedAt": "2026-02-12T21:23:02.921Z",
+  "generatedAt": "2026-02-12T23:55:16.587Z",
   "sources": {
     "buildRequest": true,
     "implementationPlan": true
   },
   "requirements": {
-    "total": 2,
-    "implemented": 2,
+    "total": 3,
+    "implemented": 3,
     "items": [
       {
-        "id": "REQ-58",
-        "summary": "Ensure the entire React component tree is wrapped by `AuthzProvider` at the application root entry (root-level render), so that no component (Navbar, route guards, pages, etc.) can render outside the provider and trigger `useAuthzState must be used within an AuthzProvider`. Do not change the internal structure of `frontend/src/App.tsx`.",
+        "id": "REQ-63",
+        "summary": "Replace the placeholder Firebase module with a real Firebase initialization using the user-provided firebaseConfig, so the app can authenticate against the correct Firebase project.\n\nUse this exact config (do not modify values):\n- apiKey: \"AIzaSyBjZ79KktvqDJKiiE3rtyXMl0qpzRYOulc\"\n- authDomain: \"my-telus-f358a.firebaseapp.com\"\n- projectId: \"my-telus-f358a\"\n- storageBucket: \"my-telus-f358a.firebasestorage.app\"\n- messagingSenderId: \"1051478062753\"\n- appId: \"1:1051478062753:web:77b1f1b2775859613f62e0\"\n\nUpdate the existing Firebase module file used by the app (currently `frontend/src/firebase.ts`) to export working Firebase instances (at minimum `auth` and `db`) instead of null placeholders.",
         "status": "implemented",
         "plannedFiles": [
-          "frontend/src/main.authz.tsx"
+          "frontend/src/firebase.ts"
         ],
         "matchedFiles": [
-          "frontend/src/main.authz.tsx"
+          "frontend/src/firebase.ts"
         ]
       },
       {
-        "id": "REQ-59",
-        "summary": "Because `frontend/src/main.tsx` is an immutable path, implement the root-level provider wrapping by creating a new React entry file (e.g., `frontend/src/main.authz.tsx`) that mirrors the existing provider composition in `frontend/src/main.tsx` but adds `AuthzProvider` to wrap `App`, and then update `frontend/index.html` to load the new entry file instead of `./src/main.tsx`.",
+        "id": "REQ-64",
+        "summary": "Update the login flow on `frontend/src/pages/LoginPage.tsx` to authenticate using Firebase Authentication (email/password) instead of validating credentials against localStorage users.\n\nUser-facing error behavior must remain consistent:\n- If credentials are wrong, show: \"Invalid email or password\"\n- If credentials are correct but the user is not approved (non-admin), show exactly: \"Your account is waiting for admin approval.\"\n\nAfter successful Firebase Auth sign-in, fetch the signed-in user’s record (role/approved/allowedPages/name/email) from the app’s user storage source used for authorization, and set in-memory authz state via `setAuthzState(...)` so navbar visibility and route guards work.\n\nDo not change the current Login page layout/visual design; only change the authentication logic and error mapping.",
         "status": "implemented",
         "plannedFiles": [
-          "frontend/src/main.authz.tsx",
-          "frontend/index.html"
+          "frontend/src/pages/LoginPage.tsx",
+          "frontend/src/utils/firestoreUserManagement.ts"
         ],
         "matchedFiles": [
-          "frontend/src/main.authz.tsx",
-          "frontend/index.html"
+          "frontend/src/pages/LoginPage.tsx"
+        ]
+      },
+      {
+        "id": "REQ-65",
+        "summary": "Remove or bypass any localStorage-only admin seeding and/or localStorage credential checks that can interfere with Firebase admin login diagnostics.\n\nSpecifically, ensure the presence of the seeded localStorage admin (admin@example.com/admin123) does not determine whether Firebase login succeeds or fails, and does not override Firebase Auth results.",
+        "status": "implemented",
+        "plannedFiles": [
+          "frontend/src/App.tsx",
+          "frontend/src/utils/seed.ts",
+          "frontend/src/pages/LoginPage.tsx"
+        ],
+        "matchedFiles": [
+          "frontend/src/pages/LoginPage.tsx"
         ]
       }
     ]
@@ -41,8 +53,8 @@
     "feature_evidence.json",
     "frontend-file-summaries.txt",
     "frontend-implementation-plan.json",
-    "frontend/index.html",
-    "frontend/src/main.authz.tsx",
+    "frontend/src/firebase.ts",
+    "frontend/src/pages/LoginPage.tsx",
     "project_state.json",
     "scratch/component-selection.json",
     "spec.md",

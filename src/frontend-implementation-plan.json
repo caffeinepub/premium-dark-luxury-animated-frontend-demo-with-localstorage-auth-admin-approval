@@ -1,43 +1,67 @@
 {
   "kind": "implementation_plan",
   "version": "1.0",
-  "title": "Wrap app root render with AuthzProvider via new entry file to fix useAuthzState runtime crash",
+  "title": "Wire real Firebase config and update admin login to use Firebase Auth",
   "requirements": [
     {
-      "id": "REQ-58",
-      "summary": "Ensure the entire React component tree renders within AuthzProvider at the root entry without modifying App.tsx",
+      "id": "REQ-63",
+      "summary": "Replace placeholder Firebase module with real Firebase initialization and export working auth/db instances.",
       "acceptanceCriteria": [
-        "The app no longer shows the runtime error: \"useAuthzState must be used within an AuthzProvider\".",
-        "`frontend/src/App.tsx` is not modified.",
-        "All routes (public and protected) render without throwing due to missing AuthzProvider."
+        "`frontend/src/firebase.ts` no longer exports `auth = null` / `db = null`; it initializes Firebase with the exact config provided by the user.",
+        "The app builds successfully with the Firebase initialization in place (no runtime import/undefined errors from the Firebase module)."
       ],
       "file_operations": [
         {
-          "path": "frontend/src/main.authz.tsx",
+          "path": "frontend/src/firebase.ts",
           "operation": "modify",
-          "description": "Ensure the root-level render wraps the entire application tree with `AuthzProvider` (from the authorization system used by `useAuthzState`) above any components that call `useAuthzState` (e.g., Navbar, route guards, layouts), while keeping the existing provider composition consistent with `frontend/src/main.tsx`. Verify the component's usage instructions before implementing."
+          "description": "Initialize Firebase using the exact user-provided firebaseConfig and export working Firebase instances (at minimum `auth` from Firebase Auth and `db` from Firestore) instead of null placeholders."
         }
       ]
     },
     {
-      "id": "REQ-59",
-      "summary": "Create a new React entry module that adds AuthzProvider and switch index.html to load it instead of the immutable main.tsx",
+      "id": "REQ-64",
+      "summary": "Update LoginPage to authenticate via Firebase email/password, then populate in-memory authz state from the app’s authorization user record source.",
       "acceptanceCriteria": [
-        "`frontend/index.html` references the new entry module (not `./src/main.tsx`).",
-        "The new entry module wraps `<App />` with `<AuthzProvider>` above the router-rendered app content.",
-        "Existing root providers already used in `frontend/src/main.tsx` (React Query and Internet Identity providers) remain present and functional in the new entry module.",
-        "No changes are made to immutable file `frontend/src/main.tsx`."
+        "Attempting to sign in with a valid Firebase Auth email/password succeeds and navigates to the post-login destination (return-to path if present, otherwise home).",
+        "Attempting to sign in with an invalid Firebase Auth email/password shows the existing error message: \"Invalid email or password\".",
+        "Attempting to sign in with a valid Firebase Auth account that is not approved (and is not admin) blocks session establishment and shows exactly: \"Your account is waiting for admin approval.\".",
+        "Navbar and protected routes behave based on the in-memory authz state populated after Firebase login (no reliance on localStorage password matching)."
       ],
       "file_operations": [
         {
-          "path": "frontend/src/main.authz.tsx",
-          "operation": "create",
-          "description": "Create a new React entry file that mirrors `frontend/src/main.tsx` provider setup (React Query `QueryClientProvider` and `InternetIdentityProvider`) and adds `AuthzProvider` to wrap `<App />` at the root render so no component can render outside it. Verify the component's usage instructions before implementing."
+          "path": "frontend/src/pages/LoginPage.tsx",
+          "operation": "modify",
+          "description": "Replace localStorage password validation with Firebase Authentication email/password sign-in. After successful sign-in, fetch the signed-in user's authorization record (role/approved/allowedPages/name/email) from the existing user storage source used for authorization and call `setAuthzState(...)`. Preserve current UI/layout and keep error strings exactly as required (including mapping invalid credentials to \"Invalid email or password\" and unapproved non-admins to \"Your account is waiting for admin approval.\")."
         },
         {
-          "path": "frontend/index.html",
+          "path": "frontend/src/utils/firestoreUserManagement.ts",
           "operation": "modify",
-          "description": "Update the module script to load `./src/main.authz.tsx` instead of `./src/main.tsx` so the application boots through the new root-level provider composition."
+          "description": "Add/adjust a helper to retrieve a single user's authorization record for the signed-in account (role/approved/allowedPages/name/email) without performing any password checks, so LoginPage can populate in-memory authz state after Firebase Auth sign-in."
+        }
+      ]
+    },
+    {
+      "id": "REQ-65",
+      "summary": "Remove or bypass localStorage-only admin seeding and credential checks that could override Firebase Auth results.",
+      "acceptanceCriteria": [
+        "Firebase Auth sign-in results solely determine whether the user is authenticated; localStorage seeded users do not cause a valid Firebase account to be rejected as \"Invalid email or password\".",
+        "The app still runs without crashes even if localStorage contains previously seeded users."
+      ],
+      "file_operations": [
+        {
+          "path": "frontend/src/App.tsx",
+          "operation": "modify",
+          "description": "Remove or bypass the `seedAdmin()` call so localStorage admin seeding does not influence Firebase login diagnostics or outcomes."
+        },
+        {
+          "path": "frontend/src/utils/seed.ts",
+          "operation": "modify",
+          "description": "Adjust the admin seeding helper so it is safe to keep in the codebase without affecting Firebase Auth login behavior (e.g., ensure it is not required for authentication and does not override Firebase-based session establishment)."
+        },
+        {
+          "path": "frontend/src/pages/LoginPage.tsx",
+          "operation": "modify",
+          "description": "Ensure there are no remaining localStorage credential comparisons (password matching) used to accept/reject login; Firebase Auth sign-in must be the sole source of authentication success/failure."
         }
       ]
     }

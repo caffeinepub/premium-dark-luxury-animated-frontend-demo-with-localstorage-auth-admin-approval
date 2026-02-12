@@ -1,6 +1,6 @@
 {
   "schemaVersion": "1.0.0",
-  "projectStateVersion": 25,
+  "projectStateVersion": 29,
   "summary": "Project scope is to keep the existing Firebase Authentication + Firestore backend and update the app to be fully Firestore-driven for authorization: admin detection uses Firestore user.role (no predefined admin email/password checks), and approval/page access use Firestore fields approved:boolean and allowedPages:string[]. After Firebase Auth login, fetch the user doc and store role/approved/allowedPages in application state (not localStorage) to drive dynamic navigation visibility and route guards with safe redirects. Firestore Security Rules are the primary enforcement for admin-only writes (user management/global content), with client-side checks only for UI/route protection; keep the UI layout unchanged and avoid unnecessary architectural changes.",
   "architectural_notes": [
     "Use React Router for routes and route protection; redirect unauthenticated to /login; restrict /admin to admin role.",
@@ -19,7 +19,8 @@
     "Authenticated navbar/top Logout is missing/inconsistent on admin and/or user pages (should match specified premium navbar behavior).",
     "Navbar layout overlap issue: ensure mobile view uses vertical layout and desktop uses horizontal layout without collisions/overflow.",
     "Production/external deployment shows missing elements/colors/broken layouts vs dev environment; likely asset path/build/deploy configuration issues causing CSS/JS/resources not to load consistently.",
-    "Runtime error: \"useAuthzState must be used within an AuthzProvider\" indicates AuthzProvider is not wrapping all components that call useAuthzState; fix by moving provider to root (main.jsx/index.js) above BrowserRouter/App."
+    "Runtime error: \"useAuthzState must be used within an AuthzProvider\" indicates AuthzProvider is not wrapping all components that call useAuthzState; fix by moving provider to root (main.jsx/index.js) above BrowserRouter/App.",
+    "Firebase admin login failing with \"Invalid email and password\" after updating Firebase config; needs config replacement in firebase.js and investigation of credential mismatch/auth setup."
   ],
   "isFixRequest": true,
   "existing_features": [
@@ -486,6 +487,54 @@
         "REQ-59"
       ],
       "version": 1
+    },
+    {
+      "id": "feature-update-the-existing-admin-panel-user-management-logic-in-frontend-src-pages-adminpage-tsx-to-manage-firestore-backed-user-approval-and-page-permissions-for-users-with-role-user-only-without-changing-the-current-layout-structure-tabs-table-cards-modal-or-touching-authentication-routing-provider-setup-or-global-state",
+      "title": "Update the existing Admin Panel user-management logic in `frontend/src/pages/AdminPage.tsx` to manage Firestore-backed user approval and page permissions for **users with `role=\"user\"` only**, without changing the current layout/structure (tabs, table/cards, modal) or touching authentication, routing, provider setup, or global state.",
+      "reqIds": [
+        "REQ-60"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-in-frontend-src-pages-adminpage-tsx-replace-localstorage-based-user-mutation-for-approval-and-permissions-with-firestore-updates-that-write-only-approved-boolean-and-allowedpages-string-using-setdoc-merge-true-for-the-selected-role-user-record",
+      "title": "In `frontend/src/pages/AdminPage.tsx`, replace localStorage-based user mutation for approval and permissions with Firestore updates that write **only** `approved:boolean` and `allowedPages:string[]` using `setDoc(..., { merge: true })` for the selected `role=\"user\"` record.",
+      "reqIds": [
+        "REQ-61"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-constrain-the-editable-page-permission-options-shown-in-the-admin-panel-to-exactly-these-page-ids-no-additions-home-intelus-live-myvideos-myfiles-notes-admin-update-the-admin-panel-s-available-page-list-accordingly-and-ensure-any-user-facing-labels-remain-in-english",
+      "title": "Constrain the editable page-permission options shown in the Admin Panel to exactly these page IDs (no additions): `home`, `intelus`, `live`, `myVideos`, `myFiles`, `notes`, `admin`. Update the Admin Panel’s available page list accordingly and ensure any user-facing labels remain in English.",
+      "reqIds": [
+        "REQ-62"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-replace-the-placeholder-firebase-module-with-a-real-firebase-initialization-using-the-user-provided-firebaseconfig-so-the-app-can-authenticate-against-the-correct-firebase-project-use-this-exact-config-do-not-modify-values-apikey-aizasybjz79kktvqdjkiie3rtyxml0qpzryoulc-authdomain-my-telus-f358a-firebaseapp-com-projectid-my-telus-f358a-storagebucket-my-telus-f358a-firebasestorage-app-messagingsenderid-1051478062753-appid-1-1051478062753-web-77b1f1b2775859613f62e0-update-the-existing-firebase-module-file-used-by-the-app-currently-frontend-src-firebase-ts-to-export-working-firebase-instances-at-minimum-auth-and-db-instead-of-null-placeholders",
+      "title": "Replace the placeholder Firebase module with a real Firebase initialization using the user-provided firebaseConfig, so the app can authenticate against the correct Firebase project.\n\nUse this exact config (do not modify values):\n- apiKey: \"AIzaSyBjZ79KktvqDJKiiE3rtyXMl0qpzRYOulc\"\n- authDomain: \"my-telus-f358a.firebaseapp.com\"\n- projectId: \"my-telus-f358a\"\n- storageBucket: \"my-telus-f358a.firebasestorage.app\"\n- messagingSenderId: \"1051478062753\"\n- appId: \"1:1051478062753:web:77b1f1b2775859613f62e0\"\n\nUpdate the existing Firebase module file used by the app (currently `frontend/src/firebase.ts`) to export working Firebase instances (at minimum `auth` and `db`) instead of null placeholders.",
+      "reqIds": [
+        "REQ-63"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-update-the-login-flow-on-frontend-src-pages-loginpage-tsx-to-authenticate-using-firebase-authentication-email-password-instead-of-validating-credentials-against-localstorage-users-user-facing-error-behavior-must-remain-consistent-if-credentials-are-wrong-show-invalid-email-or-password-if-credentials-are-correct-but-the-user-is-not-approved-non-admin-show-exactly-your-account-is-waiting-for-admin-approval-after-successful-firebase-auth-sign-in-fetch-the-signed-in-user-s-record-role-approved-allowedpages-name-email-from-the-app-s-user-storage-source-used-for-authorization-and-set-in-memory-authz-state-via-setauthzstate-so-navbar-visibility-and-route-guards-work-do-not-change-the-current-login-page-layout-visual-design-only-change-the-authentication-logic-and-error-mapping",
+      "title": "Update the login flow on `frontend/src/pages/LoginPage.tsx` to authenticate using Firebase Authentication (email/password) instead of validating credentials against localStorage users.\n\nUser-facing error behavior must remain consistent:\n- If credentials are wrong, show: \"Invalid email or password\"\n- If credentials are correct but the user is not approved (non-admin), show exactly: \"Your account is waiting for admin approval.\"\n\nAfter successful Firebase Auth sign-in, fetch the signed-in user’s record (role/approved/allowedPages/name/email) from the app’s user storage source used for authorization, and set in-memory authz state via `setAuthzState(...)` so navbar visibility and route guards work.\n\nDo not change the current Login page layout/visual design; only change the authentication logic and error mapping.",
+      "reqIds": [
+        "REQ-64"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-remove-or-bypass-any-localstorage-only-admin-seeding-and-or-localstorage-credential-checks-that-can-interfere-with-firebase-admin-login-diagnostics-specifically-ensure-the-presence-of-the-seeded-localstorage-admin-admin-example-com-admin123-does-not-determine-whether-firebase-login-succeeds-or-fails-and-does-not-override-firebase-auth-results",
+      "title": "Remove or bypass any localStorage-only admin seeding and/or localStorage credential checks that can interfere with Firebase admin login diagnostics.\n\nSpecifically, ensure the presence of the seeded localStorage admin (admin@example.com/admin123) does not determine whether Firebase login succeeds or fails, and does not override Firebase Auth results.",
+      "reqIds": [
+        "REQ-65"
+      ],
+      "version": 1
     }
   ],
   "new_feature_requests": [
@@ -726,6 +775,12 @@
     {
       "id": "AR-43",
       "summary": "Remove all localStorage-based authorization (role/approved/allowedPages/expiry) and update only the Firebase login flow + route guards to fetch Firestore user.role/approved/allowedPages post-login, store in app state (not localStorage), and drive dynamic navigation + protected routes; enforce admin-only writes primarily via Firestore Security Rules without changing UI layout",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-44",
+      "summary": "Extend existing Admin Panel to manage Firestore user approval + page permissions: for role='user' only, allow admin to update approved:boolean and allowedPages:string[] (limited to existing route IDs: home, intelus, live, myVideos, myFiles, notes, admin) using setDoc(..., { merge:true }) without changing auth/routing/provider/global state or UI layout",
       "reqIds": [],
       "status": "pending"
     }

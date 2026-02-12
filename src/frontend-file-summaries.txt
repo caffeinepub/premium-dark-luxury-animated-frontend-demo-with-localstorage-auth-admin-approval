@@ -1,5 +1,5 @@
 {
-  "frontend/src/App.tsx": "Main app with router configuration using page-level guards for all protected routes with consistent authentication patterns.",
+  "frontend/src/App.tsx": "Main app with router configuration using page-level guards for all protected routes with consistent authentication patterns, calling seedAdmin on mount to ensure default admin exists.",
   "frontend/src/main.tsx": "Application entry point wrapping App with QueryClientProvider, InternetIdentityProvider, and AuthzProvider for in-memory authorization state management.",
   "frontend/index.html": "HTML entry point updated to load main.authz.tsx instead of main.tsx, with critical inline CSS to prevent white flash on load.",
   "frontend/src/index.css": "Global styles with OKLCH luxury-dark theme, explicit #0A1F44 background colors on html/body/#root, glassmorphism utilities, 0.5s animations, and responsive utilities for consistent dark theme rendering.",
@@ -21,7 +21,7 @@
   "frontend/src/pages/HomePage.tsx": "Home dashboard with navigation cards filtered by allowedPages permissions, access-denied alert display, and responsive grid layout.",
   "frontend/src/pages/VideosPage.tsx": "Telus Videos page with responsive grid of three YouTube embeds inside animated glass cards with staggered entrance animations using CSS.",
   "frontend/src/pages/PortfolioPage.tsx": "Portfolio page with responsive iframe container and proper height constraints to prevent overflow while maintaining dark-luxury framing.",
-  "frontend/src/pages/AdminPage.tsx": "Admin panel with user management including approval toggle and page permission checkboxes, content library management, and responsive stats cards.",
+  "frontend/src/pages/AdminPage.tsx": "Admin panel with user management for role=\"user\" accounts only, using merge-like updates for approved and allowedPages with the correct page IDs (home, intelus, live, myVideos, myFiles, notes, admin), content library management, and responsive stats cards.",
   "frontend/src/lib/utils.ts": "Utility function for merging Tailwind CSS classes using clsx and tailwind-merge.",
   "frontend/src/components/GlassCard.tsx": "Reusable glassmorphism card component with optional hover animations (lift and scale) using CSS transitions instead of framer-motion.",
   "frontend/src/components/PremiumCard.tsx": "Premium glass card component with icon, title, optional description, and onClick handler with hover lift/glow effects and neon border transitions.",
@@ -51,7 +51,8 @@
   "frontend/src/components/diagnostics/ThemeDiagnosticsBanner.tsx": "Query-param-gated diagnostics component that checks CSS load status, theme variables, and background color application with pass/fail UI for production debugging.",
   "frontend/src/utils/urlParams.ts": "URL parameter utility functions for reading query params, checking diagnostics mode, managing URL state, and retrieving secret parameters for admin initialization without page reloads.",
   "frontend/src/utils/returnTo.ts": "Utilities for preserving and restoring the originally requested destination when redirecting unauthenticated users to login, using sessionStorage and search params.",
-  "frontend/src/firebase.ts": "Firebase client initialization with Authentication and Firestore using environment-driven configuration for the app.",
+  "frontend/src/firebase.ts": "Firebase configuration file storing my-telus-f358a project credentials with placeholder exports (null) until Firebase SDK packages are added to package.json, includes clear documentation about missing dependencies.",
   "frontend/src/hooks/useAuthzState.tsx": "In-memory authorization state provider and hook managing role, approved, allowedPages, email, and name without localStorage persistence, ready for Firestore integration.",
-  "frontend/src/main.authz.tsx": "New React entry point that wraps the entire application with QueryClientProvider, InternetIdentityProvider, and AuthzProvider at the root level, ensuring all components have access to authorization context."
+  "frontend/src/main.authz.tsx": "New React entry point that wraps the entire application with QueryClientProvider, InternetIdentityProvider, and AuthzProvider at the root level, ensuring all components have access to authorization context.",
+  "frontend/src/utils/firestoreUserManagement.ts": "User management utilities using localStorage with merge-like behavior for approved and allowedPages fields, filtering to role=\"user\" only, structured for easy future Firestore migration."
 }

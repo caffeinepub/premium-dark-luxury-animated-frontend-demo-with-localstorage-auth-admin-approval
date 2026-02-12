@@ -2,10 +2,10 @@
   "kind": "feature_evidence_report",
   "features": [
     {
-      "featureId": "feature-ensure-the-entire-react-component-tree-is-wrapped-by-authzprovider-at-the-application-root-entry-root-level-render-so-that-no-component-navbar-route-guards-pages-etc-can-render-outside-the-provider-and-trigger-useauthzstate-must-be-used-within-an-authzprovider-do-not-change-the-internal-structure-of-frontend-src-app-tsx",
-      "featureTitle": "Ensure the entire React component tree is wrapped by `AuthzProvider` at the application root entry (root-level render), so that no component (Navbar, route guards, pages, etc.) can render outside the provider and trigger `useAuthzState must be used within an AuthzProvider`. Do not change the internal structure of `frontend/src/App.tsx`.",
+      "featureId": "feature-replace-the-placeholder-firebase-module-with-a-real-firebase-initialization-using-the-user-provided-firebaseconfig-so-the-app-can-authenticate-against-the-correct-firebase-project-use-this-exact-config-do-not-modify-values-apikey-aizasybjz79kktvqdjkiie3rtyxml0qpzryoulc-authdomain-my-telus-f358a-firebaseapp-com-projectid-my-telus-f358a-storagebucket-my-telus-f358a-firebasestorage-app-messagingsenderid-1051478062753-appid-1-1051478062753-web-77b1f1b2775859613f62e0-update-the-existing-firebase-module-file-used-by-the-app-currently-frontend-src-firebase-ts-to-export-working-firebase-instances-at-minimum-auth-and-db-instead-of-null-placeholders",
+      "featureTitle": "Replace the placeholder Firebase module with a real Firebase initialization using the user-provided firebaseConfig, so the app can authenticate against the correct Firebase project.\n\nUse this exact config (do not modify values):\n- apiKey: \"AIzaSyBjZ79KktvqDJKiiE3rtyXMl0qpzRYOulc\"\n- authDomain: \"my-telus-f358a.firebaseapp.com\"\n- projectId: \"my-telus-f358a\"\n- storageBucket: \"my-telus-f358a.firebasestorage.app\"\n- messagingSenderId: \"1051478062753\"\n- appId: \"1:1051478062753:web:77b1f1b2775859613f62e0\"\n\nUpdate the existing Firebase module file used by the app (currently `frontend/src/firebase.ts`) to export working Firebase instances (at minimum `auth` and `db`) instead of null placeholders.",
       "files": [
-        "frontend/src/main.authz.tsx"
+        "frontend/src/firebase.ts"
       ],
       "components": [
         "core-infrastructure@1.0.2",
@@ -18,16 +18,15 @@
         "user-approval@3.0.0"
       ],
       "testIds": [
-        "REQ-58"
+        "REQ-63"
       ],
       "confidence": "high"
     },
     {
-      "featureId": "feature-because-frontend-src-main-tsx-is-an-immutable-path-implement-the-root-level-provider-wrapping-by-creating-a-new-react-entry-file-e-g-frontend-src-main-authz-tsx-that-mirrors-the-existing-provider-composition-in-frontend-src-main-tsx-but-adds-authzprovider-to-wrap-app-and-then-update-frontend-index-html-to-load-the-new-entry-file-instead-of-src-main-tsx",
-      "featureTitle": "Because `frontend/src/main.tsx` is an immutable path, implement the root-level provider wrapping by creating a new React entry file (e.g., `frontend/src/main.authz.tsx`) that mirrors the existing provider composition in `frontend/src/main.tsx` but adds `AuthzProvider` to wrap `App`, and then update `frontend/index.html` to load the new entry file instead of `./src/main.tsx`.",
+      "featureId": "feature-update-the-login-flow-on-frontend-src-pages-loginpage-tsx-to-authenticate-using-firebase-authentication-email-password-instead-of-validating-credentials-against-localstorage-users-user-facing-error-behavior-must-remain-consistent-if-credentials-are-wrong-show-invalid-email-or-password-if-credentials-are-correct-but-the-user-is-not-approved-non-admin-show-exactly-your-account-is-waiting-for-admin-approval-after-successful-firebase-auth-sign-in-fetch-the-signed-in-user-s-record-role-approved-allowedpages-name-email-from-the-app-s-user-storage-source-used-for-authorization-and-set-in-memory-authz-state-via-setauthzstate-so-navbar-visibility-and-route-guards-work-do-not-change-the-current-login-page-layout-visual-design-only-change-the-authentication-logic-and-error-mapping",
+      "featureTitle": "Update the login flow on `frontend/src/pages/LoginPage.tsx` to authenticate using Firebase Authentication (email/password) instead of validating credentials against localStorage users.\n\nUser-facing error behavior must remain consistent:\n- If credentials are wrong, show: \"Invalid email or password\"\n- If credentials are correct but the user is not approved (non-admin), show exactly: \"Your account is waiting for admin approval.\"\n\nAfter successful Firebase Auth sign-in, fetch the signed-in user’s record (role/approved/allowedPages/name/email) from the app’s user storage source used for authorization, and set in-memory authz state via `setAuthzState(...)` so navbar visibility and route guards work.\n\nDo not change the current Login page layout/visual design; only change the authentication logic and error mapping.",
       "files": [
-        "frontend/index.html",
-        "frontend/src/main.authz.tsx"
+        "frontend/src/pages/LoginPage.tsx"
       ],
       "components": [
         "core-infrastructure@1.0.2",
@@ -40,7 +39,28 @@
         "user-approval@3.0.0"
       ],
       "testIds": [
-        "REQ-59"
+        "REQ-64"
+      ],
+      "confidence": "high"
+    },
+    {
+      "featureId": "feature-remove-or-bypass-any-localstorage-only-admin-seeding-and-or-localstorage-credential-checks-that-can-interfere-with-firebase-admin-login-diagnostics-specifically-ensure-the-presence-of-the-seeded-localstorage-admin-admin-example-com-admin123-does-not-determine-whether-firebase-login-succeeds-or-fails-and-does-not-override-firebase-auth-results",
+      "featureTitle": "Remove or bypass any localStorage-only admin seeding and/or localStorage credential checks that can interfere with Firebase admin login diagnostics.\n\nSpecifically, ensure the presence of the seeded localStorage admin (admin@example.com/admin123) does not determine whether Firebase login succeeds or fails, and does not override Firebase Auth results.",
+      "files": [
+        "frontend/src/pages/LoginPage.tsx"
+      ],
+      "components": [
+        "core-infrastructure@1.0.2",
+        "shadcn-ui@1.0.0",
+        "build-template-react@1.0.0",
+        "initial-app@1.0.0",
+        "github-export-icp-cli@1.0.0",
+        "authorization@4.0.0",
+        "blob-storage@4.0.0",
+        "user-approval@3.0.0"
+      ],
+      "testIds": [
+        "REQ-65"
       ],
       "confidence": "high"
     }
