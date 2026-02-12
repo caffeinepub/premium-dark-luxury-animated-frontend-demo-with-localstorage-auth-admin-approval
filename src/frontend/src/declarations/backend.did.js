@@ -8,10 +8,166 @@
 
 import { IDL } from '@icp-sdk/core/candid';
 
-export const idlService = IDL.Service({});
+export const _CaffeineStorageCreateCertificateResult = IDL.Record({
+  'method' : IDL.Text,
+  'blob_hash' : IDL.Text,
+});
+export const _CaffeineStorageRefillInformation = IDL.Record({
+  'proposed_top_up_amount' : IDL.Opt(IDL.Nat),
+});
+export const _CaffeineStorageRefillResult = IDL.Record({
+  'success' : IDL.Opt(IDL.Bool),
+  'topped_up_amount' : IDL.Opt(IDL.Nat),
+});
+export const ExternalBlob = IDL.Vec(IDL.Nat8);
+export const ContentType = IDL.Variant({
+  'liveEmbed' : IDL.Text,
+  'videoFile' : ExternalBlob,
+  'videoLink' : IDL.Text,
+  'document' : ExternalBlob,
+});
+export const ContentStatus = IDL.Record({
+  'deleted' : IDL.Bool,
+  'enabled' : IDL.Bool,
+});
+export const ContentItem = IDL.Record({
+  'id' : IDL.Nat,
+  'status' : ContentStatus,
+  'title' : IDL.Text,
+  'contentType' : ContentType,
+  'createdAt' : IDL.Nat,
+  'createdBy' : IDL.Principal,
+  'description' : IDL.Text,
+});
+export const UserRole = IDL.Variant({
+  'admin' : IDL.Null,
+  'user' : IDL.Null,
+  'guest' : IDL.Null,
+});
+
+export const idlService = IDL.Service({
+  '_caffeineStorageBlobIsLive' : IDL.Func(
+      [IDL.Vec(IDL.Nat8)],
+      [IDL.Bool],
+      ['query'],
+    ),
+  '_caffeineStorageBlobsToDelete' : IDL.Func(
+      [],
+      [IDL.Vec(IDL.Vec(IDL.Nat8))],
+      ['query'],
+    ),
+  '_caffeineStorageConfirmBlobDeletion' : IDL.Func(
+      [IDL.Vec(IDL.Vec(IDL.Nat8))],
+      [],
+      [],
+    ),
+  '_caffeineStorageCreateCertificate' : IDL.Func(
+      [IDL.Text],
+      [_CaffeineStorageCreateCertificateResult],
+      [],
+    ),
+  '_caffeineStorageRefillCashier' : IDL.Func(
+      [IDL.Opt(_CaffeineStorageRefillInformation)],
+      [_CaffeineStorageRefillResult],
+      [],
+    ),
+  '_caffeineStorageUpdateGatewayPrincipals' : IDL.Func([], [], []),
+  '_initializeAccessControlWithSecret' : IDL.Func([IDL.Text], [], []),
+  'addContent' : IDL.Func(
+      [IDL.Text, IDL.Text, ContentType, IDL.Bool],
+      [IDL.Nat],
+      [],
+    ),
+  'adminGetAllContent' : IDL.Func([], [IDL.Vec(ContentItem)], ['query']),
+  'assignCallerUserRole' : IDL.Func([IDL.Principal, UserRole], [], []),
+  'deleteContent' : IDL.Func([IDL.Nat], [], []),
+  'getCallerUserRole' : IDL.Func([], [UserRole], ['query']),
+  'getContentItems' : IDL.Func([], [IDL.Vec(ContentItem)], ['query']),
+  'isCallerAdmin' : IDL.Func([], [IDL.Bool], ['query']),
+  'setContentStatus' : IDL.Func([IDL.Nat, IDL.Bool], [], []),
+});
 
 export const idlInitArgs = [];
 
-export const idlFactory = ({ IDL }) => { return IDL.Service({}); };
+export const idlFactory = ({ IDL }) => {
+  const _CaffeineStorageCreateCertificateResult = IDL.Record({
+    'method' : IDL.Text,
+    'blob_hash' : IDL.Text,
+  });
+  const _CaffeineStorageRefillInformation = IDL.Record({
+    'proposed_top_up_amount' : IDL.Opt(IDL.Nat),
+  });
+  const _CaffeineStorageRefillResult = IDL.Record({
+    'success' : IDL.Opt(IDL.Bool),
+    'topped_up_amount' : IDL.Opt(IDL.Nat),
+  });
+  const ExternalBlob = IDL.Vec(IDL.Nat8);
+  const ContentType = IDL.Variant({
+    'liveEmbed' : IDL.Text,
+    'videoFile' : ExternalBlob,
+    'videoLink' : IDL.Text,
+    'document' : ExternalBlob,
+  });
+  const ContentStatus = IDL.Record({
+    'deleted' : IDL.Bool,
+    'enabled' : IDL.Bool,
+  });
+  const ContentItem = IDL.Record({
+    'id' : IDL.Nat,
+    'status' : ContentStatus,
+    'title' : IDL.Text,
+    'contentType' : ContentType,
+    'createdAt' : IDL.Nat,
+    'createdBy' : IDL.Principal,
+    'description' : IDL.Text,
+  });
+  const UserRole = IDL.Variant({
+    'admin' : IDL.Null,
+    'user' : IDL.Null,
+    'guest' : IDL.Null,
+  });
+  
+  return IDL.Service({
+    '_caffeineStorageBlobIsLive' : IDL.Func(
+        [IDL.Vec(IDL.Nat8)],
+        [IDL.Bool],
+        ['query'],
+      ),
+    '_caffeineStorageBlobsToDelete' : IDL.Func(
+        [],
+        [IDL.Vec(IDL.Vec(IDL.Nat8))],
+        ['query'],
+      ),
+    '_caffeineStorageConfirmBlobDeletion' : IDL.Func(
+        [IDL.Vec(IDL.Vec(IDL.Nat8))],
+        [],
+        [],
+      ),
+    '_caffeineStorageCreateCertificate' : IDL.Func(
+        [IDL.Text],
+        [_CaffeineStorageCreateCertificateResult],
+        [],
+      ),
+    '_caffeineStorageRefillCashier' : IDL.Func(
+        [IDL.Opt(_CaffeineStorageRefillInformation)],
+        [_CaffeineStorageRefillResult],
+        [],
+      ),
+    '_caffeineStorageUpdateGatewayPrincipals' : IDL.Func([], [], []),
+    '_initializeAccessControlWithSecret' : IDL.Func([IDL.Text], [], []),
+    'addContent' : IDL.Func(
+        [IDL.Text, IDL.Text, ContentType, IDL.Bool],
+        [IDL.Nat],
+        [],
+      ),
+    'adminGetAllContent' : IDL.Func([], [IDL.Vec(ContentItem)], ['query']),
+    'assignCallerUserRole' : IDL.Func([IDL.Principal, UserRole], [], []),
+    'deleteContent' : IDL.Func([IDL.Nat], [], []),
+    'getCallerUserRole' : IDL.Func([], [UserRole], ['query']),
+    'getContentItems' : IDL.Func([], [IDL.Vec(ContentItem)], ['query']),
+    'isCallerAdmin' : IDL.Func([], [IDL.Bool], ['query']),
+    'setContentStatus' : IDL.Func([IDL.Nat, IDL.Bool], [], []),
+  });
+};
 
 export const init = ({ IDL }) => { return []; };

@@ -1,17 +1,26 @@
 {
   "schemaVersion": "1.0.0",
-  "projectStateVersion": 5,
-  "summary": "Frontend-only premium animated demo website built with React (Vite), Tailwind CSS, Framer Motion, and React Router, featuring localStorage-simulated authentication, admin approval workflow, protected routes, dark luxury glassmorphism UI, and pages for Home, Telus Videos, Portfolio iframe, and Admin user management.",
+  "projectStateVersion": 21,
+  "summary": "Project scope is to keep the existing Firebase Authentication + Firestore backend and minimally extend the current app to implement secure admin approval and page-level authorization. Landing/Login/Register remain public; all internal routes require authentication plus Firestore-stored user approval (approved boolean) and per-page permissions (allowedPages array). Permissions are fetched on login and on page refresh (no real-time listeners) and drive both navigation visibility and route guards with safe redirects when unauthorized.",
   "architectural_notes": [
-    "Frontend-only; no backend/server/external DB. All data persisted in localStorage (users + session).",
-    "On app load, ensure predefined admin exists and remains approved by default.",
     "Use React Router for routes and route protection; redirect unauthenticated to /login; restrict /admin to admin role.",
     "Use Framer Motion for consistent 0.5s transitions, hover states, and route/page animations.",
-    "Maintain modular structure: src/, components/, pages/, utils/ with consistent UI styling."
+    "Maintain modular structure: src/, components/, pages/, utils/ with consistent UI styling.",
+    "Navbar should be rendered on the /admin page as well (consistent sticky glassmorphism styling + Framer Motion animations across authenticated pages).",
+    "Do not render the main Navbar on unauthenticated pages (Login/Register); show Navbar only on authenticated user/admin areas.",
+    "Registration should be launched from Login as a modal popup and include confirm-password validation; after registration, return user to Login screen.",
+    "Project now requires a proper backend + database to support admin-controlled content, file uploads, enable/disable visibility controls, and consistent deployed behavior (not localStorage/static-only).",
+    "Production deployment must ensure correct asset paths/build config so CSS/JS/resources load consistently outside the dev platform across browsers/devices.",
+    "For any protected/restricted route access while unauthenticated, redirect to /login while preserving the originally requested path (and optional query/hash) so post-login can automatically navigate back to that destination.",
+    "Use Firebase Authentication + Firestore (no Motoko backend): each user doc includes approved:boolean and allowedPages:string[]; on login and on full page refresh re-fetch the user doc (no real-time listeners), build navigation from allowedPages, and guard routes by redirecting unauthorized users to a safe page."
   ],
-  "known_issues": [],
+  "known_issues": [
+    "Admin page currently missing or not matching the specified premium animated navbar; needs to match prompt styling/animations.",
+    "Authenticated navbar/top Logout is missing/inconsistent on admin and/or user pages (should match specified premium navbar behavior).",
+    "Navbar layout overlap issue: ensure mobile view uses vertical layout and desktop uses horizontal layout without collisions/overflow.",
+    "Production/external deployment shows missing elements/colors/broken layouts vs dev environment; likely asset path/build/deploy configuration issues causing CSS/JS/resources not to load consistently."
+  ],
   "isFixRequest": false,
-  "imageRequirements": "## Required Images\n- Cute cartoon baby character illustration, front-facing, smiling/laughing, transparent background (baby-laugh.dim_512x512.png)\n- Small heart/kiss overlay icons set, transparent background (kiss-hearts.dim_256x256.png)\n- Small motion streaks/dust puffs for running effect, transparent background (run-streaks.dim_256x256.png)",
   "existing_features": [
     {
       "id": "feature-implement-a-frontend-only-app-experience-no-backend-calls-no-server-side-state-no-external-databases-where-all-authentication-session-handling-and-admin-approval-logic-is-simulated-strictly-using-localstorage",
@@ -156,6 +165,270 @@
         "REQ-18"
       ],
       "version": 1
+    },
+    {
+      "id": "feature-ensure-the-admin-page-displays-the-same-sticky-premium-glassmorphism-navbar-home-telus-dropdown-with-videos-portfolio-admin-logout-with-polished-premium-looking-animations-and-interactions-consistent-with-the-rest-of-the-app",
+      "title": "Ensure the /admin page displays the same sticky premium glassmorphism Navbar (Home, Telus dropdown with Videos & Portfolio, Admin, Logout) with polished premium-looking animations and interactions consistent with the rest of the app.",
+      "reqIds": [
+        "REQ-19"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-upgrade-the-navbar-visual-polish-and-animation-details-without-changing-link-destinations-or-access-rules-to-feel-more-premium-on-all-authenticated-pages-including-admin",
+      "title": "Upgrade the Navbar visual polish and animation details (without changing link destinations or access rules) to feel more premium on all authenticated pages, including /admin.",
+      "reqIds": [
+        "REQ-20"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-replace-the-standalone-register-flow-with-a-register-popup-modal-launched-from-the-login-page-on-login-provide-a-register-action-that-opens-a-modal-over-the-login-card-no-navbar-on-auth-screens-the-modal-must-include-fields-name-email-password-confirm-password-with-basic-validation-required-fields-confirm-password-must-match-password-on-successful-registration-close-the-modal-and-keep-return-the-user-on-the-login-page-so-they-can-attempt-login",
+      "title": "Replace the standalone /register flow with a Register popup/modal launched from the Login page: on /login, provide a “Register” action that opens a modal over the Login card (no navbar on auth screens). The modal must include fields: name, email, password, confirm password, with basic validation (required fields, confirm password must match password). On successful registration, close the modal and keep/return the user on the Login page so they can attempt login.",
+      "reqIds": [
+        "REQ-21"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-update-routing-so-that-direct-navigation-to-register-is-handled-sensibly-visiting-register-should-not-show-a-separate-full-page-registration-experience-it-should-instead-redirect-to-login-and-present-the-register-modal-or-otherwise-ensure-the-user-ends-up-on-login-with-access-to-the-register-popup",
+      "title": "Update routing so that direct navigation to /register is handled sensibly: visiting /register should not show a separate full page registration experience; it should instead redirect to /login and present the Register modal (or otherwise ensure the user ends up on /login with access to the Register popup).",
+      "reqIds": [
+        "REQ-22"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-enhance-the-auth-screen-interactions-to-feel-professional-and-funny-while-keeping-the-login-form-readable-and-fully-functional-keep-the-existing-baby-themed-animation-on-the-login-page-and-ensure-the-register-modal-uses-consistent-0-5s-entrance-exit-and-button-input-interaction-animations-that-do-not-cause-overflow-on-mobile",
+      "title": "Enhance the auth-screen interactions to feel professional and “funny” while keeping the login form readable and fully functional: keep the existing baby-themed animation on the Login page and ensure the Register modal uses consistent 0.5s entrance/exit and button/input interaction animations that do not cause overflow on mobile.",
+      "reqIds": [
+        "REQ-23"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-add-basic-member-access-analytics-persisted-in-localstorage-and-displayed-in-the-admin-panel-show-total-registered-members-role-user-and-simple-access-counts-logs-at-minimum-successful-logins-and-page-visits-for-authenticated-pages-provide-a-clear-summary-section-on-admin-above-the-user-table",
+      "title": "Add basic member/access analytics persisted in localStorage and displayed in the Admin panel: show total registered members (role='user') and simple access counts/logs (at minimum: successful logins and page visits for authenticated pages). Provide a clear summary section on /admin above the user table.",
+      "reqIds": [
+        "REQ-24"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-fix-the-authenticated-top-navigation-so-that-logout-is-consistently-visible-and-functional-for-both-admin-and-normal-users-on-all-authenticated-pages-including-admin-matching-the-existing-premium-sticky-glassmorphism-navbar-behavior",
+      "title": "Fix the authenticated top navigation so that Logout is consistently visible and functional for both admin and normal users on all authenticated pages (including /admin), matching the existing premium sticky glassmorphism navbar behavior.",
+      "reqIds": [
+        "REQ-25"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-add-an-admin-only-content-library-management-section-inside-the-admin-panel-that-lets-the-admin-add-local-video-files-and-local-pdf-and-other-document-files-via-file-picker-store-their-metadata-in-localstorage-and-list-manage-them-with-a-premium-ui",
+      "title": "Add an Admin-only \"Content Library\" management section inside the Admin panel that lets the admin add local video files and local PDF (and other document) files via file picker, store their metadata in localStorage, and list/manage them with a premium UI.",
+      "reqIds": [
+        "REQ-26"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-create-user-facing-pages-for-my-videos-and-my-files-that-display-the-admin-added-content-library-items-videos-and-documents-in-a-responsive-premium-grid-list-users-can-view-open-items-but-cannot-add-new-items",
+      "title": "Create user-facing pages for \"My Videos\" and \"My Files\" that display the admin-added content library items (videos and documents) in a responsive premium grid/list; users can view/open items but cannot add new items.",
+      "reqIds": [
+        "REQ-27"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-implement-admin-controlled-access-approvals-for-navbar-sections-pages-on-a-per-user-basis-including-an-expiry-date-day-month-year-enforce-these-rules-for-both-navbar-visibility-and-direct-url-access-route-protection",
+      "title": "Implement Admin-controlled access approvals for navbar sections/pages on a per-user basis, including an expiry date (day/month/year). Enforce these rules for both navbar visibility and direct URL access (route protection).",
+      "reqIds": [
+        "REQ-28"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-upgrade-the-login-page-baby-animation-to-be-more-impressive-and-premium-featuring-a-full-body-laughing-baby-and-enhanced-kiss-cartoon-style-animation-beats-while-keeping-the-login-form-fully-readable-and-responsive-no-overflow",
+      "title": "Upgrade the Login page baby animation to be more impressive and premium, featuring a full-body laughing baby and enhanced kiss/cartoon-style animation beats, while keeping the login form fully readable and responsive (no overflow).",
+      "reqIds": [
+        "REQ-29"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-prevent-accidental-deletion-of-uploaded-content-entries-once-a-content-item-is-added-it-cannot-be-removed-unless-the-admin-explicitly-confirms-deletion-using-a-checkbox-confirmation-control-above-within-the-delete-prompt",
+      "title": "Prevent accidental deletion of uploaded content entries: once a content item is added, it cannot be removed unless the admin explicitly confirms deletion using a checkbox confirmation control above/within the delete prompt.",
+      "reqIds": [
+        "REQ-30"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-fix-the-authenticated-sticky-navbar-so-it-never-overlaps-collides-or-causes-horizontal-overflow-on-any-screen-size-with-a-vertical-navigation-layout-on-mobile-and-a-horizontal-navigation-layout-on-desktop",
+      "title": "Fix the authenticated sticky Navbar so it never overlaps, collides, or causes horizontal overflow on any screen size, with a vertical navigation layout on mobile and a horizontal navigation layout on desktop.",
+      "reqIds": [
+        "REQ-31"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-update-the-navbar-mobile-behavior-to-prevent-layout-crowding-by-introducing-a-controlled-mobile-menu-interaction-e-g-collapsible-toggle-and-ensure-dropdown-menu-layers-render-above-content-without-causing-overlap-glitches",
+      "title": "Update the Navbar mobile behavior to prevent layout crowding by introducing a controlled mobile menu interaction (e.g., collapsible/toggle) and ensure dropdown/menu layers render above content without causing overlap glitches.",
+      "reqIds": [
+        "REQ-32"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-make-all-existing-sections-and-pages-including-home-telus-intelus-my-videos-my-files-admin-panel-and-any-new-live-section-fully-responsive-across-mobile-tablet-desktop-so-that-no-elements-overlap-disappear-overflow-horizontally-or-lose-styling-in-any-browser-fix-alignment-spacing-and-color-inconsistencies-while-keeping-the-current-premium-dark-luxury-styles-animations-and-button-designs-unchanged",
+      "title": "Make all existing sections and pages (including Home, Telus/Intelus, My Videos, My Files, Admin Panel, and any new Live section) fully responsive across mobile/tablet/desktop so that no elements overlap, disappear, overflow horizontally, or lose styling in any browser; fix alignment, spacing, and color inconsistencies while keeping the current premium dark-luxury styles, animations, and button designs unchanged.",
+      "reqIds": [
+        "REQ-33"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-fix-the-production-external-deployment-issue-where-styles-assets-scripts-appear-missing-or-incomplete-compared-to-the-dev-environment-by-correcting-asset-paths-and-build-deploy-configuration-so-css-javascript-and-static-resources-load-reliably-when-opened-externally-in-a-new-tab-and-across-browsers",
+      "title": "Fix the production/external deployment issue where styles/assets/scripts appear missing or incomplete compared to the dev environment by correcting asset paths and build/deploy configuration so CSS, JavaScript, and static resources load reliably when opened externally, in a new tab, and across browsers.",
+      "reqIds": [
+        "REQ-34"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-modify-the-admin-panel-to-provide-a-complete-intelus-content-management-system-where-the-admin-can-add-1-google-drive-video-links-2-direct-video-file-uploads-and-3-pdf-document-uploads-each-item-must-support-enable-disable-controls-and-a-delete-option-and-the-admin-panel-must-show-a-visible-list-of-uploaded-added-items-with-their-key-metadata",
+      "title": "Modify the Admin Panel to provide a complete Intelus content management system where the admin can add: (1) Google Drive video links, (2) direct video file uploads, and (3) PDF/document uploads; each item must support enable/disable controls and a delete option, and the Admin Panel must show a visible list of uploaded/added items with their key metadata.",
+      "reqIds": [
+        "REQ-36"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-ensure-google-drive-videos-added-by-the-admin-are-embedded-and-playable-directly-inside-the-website-no-redirect-to-drive-google-com-implement-robust-google-drive-url-handling-so-that-common-share-links-are-converted-to-an-embeddable-preview-format-whenever-possible",
+      "title": "Ensure Google Drive videos added by the admin are embedded and playable directly inside the website (no redirect to drive.google.com). Implement robust Google Drive URL handling so that common share links are converted to an embeddable preview format whenever possible.",
+      "reqIds": [
+        "REQ-37"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-update-user-facing-intelus-content-display-so-that-only-admin-enabled-content-is-visible-to-non-admin-users-disabled-content-must-not-be-rendered-in-intelus-live-my-videos-or-my-files-as-applicable",
+      "title": "Update user-facing Intelus content display so that only admin-enabled content is visible to non-admin users; disabled content must not be rendered in Intelus, Live, My Videos, or My Files (as applicable).",
+      "reqIds": [
+        "REQ-38"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-implement-backend-backed-file-retrieval-so-that-uploaded-videos-and-documents-open-play-download-directly-inside-the-website-without-relying-on-local-in-memory-object-urls-ensure-behavior-works-consistently-across-browsers-devices-and-after-reloads-including-production",
+      "title": "Implement backend-backed file retrieval so that uploaded videos and documents open/play/download directly inside the website without relying on local in-memory object URLs; ensure behavior works consistently across browsers/devices and after reloads (including production).",
+      "reqIds": [
+        "REQ-39"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-add-a-new-live-section-page-that-displays-any-admin-enabled-live-content-consistently-across-browsers-devices-include-support-for-admin-managed-embedded-previews-and-ensure-the-live-section-renders-the-same-when-opened-in-a-new-tab-or-external-browser",
+      "title": "Add a new Live Section page that displays any admin-enabled Live content consistently across browsers/devices; include support for admin-managed embedded previews and ensure the Live Section renders the same when opened in a new tab or external browser.",
+      "reqIds": [
+        "REQ-40"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-add-an-admin-panel-control-that-allows-the-admin-to-enter-any-external-project-website-link-and-have-it-displayed-as-a-live-embedded-preview-within-the-live-section-iframe-if-the-external-site-blocks-embedding-due-to-security-headers-provide-a-clear-fallback-that-offers-an-explicit-open-in-new-tab-action-instead-of-silently-failing",
+      "title": "Add an Admin Panel control that allows the admin to enter any external project website link and have it displayed as a live embedded preview within the Live Section (iframe). If the external site blocks embedding due to security headers, provide a clear fallback that offers an explicit “Open in new tab” action instead of silently failing.",
+      "reqIds": [
+        "REQ-41"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-extend-routing-navigation-to-include-the-intelus-section-and-the-new-live-section-with-the-same-responsiveness-guarantees-as-the-current-navbar-ensure-correct-route-protection-behavior-and-that-link-destinations-do-not-open-the-wrong-page-experience-in-production",
+      "title": "Extend routing/navigation to include the Intelus section and the new Live section, with the same responsiveness guarantees as the current navbar; ensure correct route protection behavior and that link destinations do not open the “wrong page” experience in production.",
+      "reqIds": [
+        "REQ-42"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-fix-the-production-external-deployment-so-the-app-loads-the-same-premium-dark-luxury-theme-dark-background-neon-accents-glass-panels-in-any-external-browser-new-tab-and-on-any-device-instead-of-rendering-as-an-unstyled-white-page",
+      "title": "Fix the production/external deployment so the app loads the same premium dark-luxury theme (dark background, neon accents, glass panels) in any external browser/new tab and on any device, instead of rendering as an unstyled/white page.",
+      "reqIds": [
+        "REQ-43"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-correct-frontend-asset-path-build-configuration-so-css-js-resources-resolve-correctly-when-served-from-non-root-paths-as-occurs-in-external-production-canister-hosting-ensuring-the-module-script-entry-and-any-generated-asset-urls-do-not-assume-a-leading",
+      "title": "Correct frontend asset path/build configuration so CSS/JS resources resolve correctly when served from non-root paths (as occurs in external/production canister hosting), ensuring the module script entry and any generated asset URLs do not assume a leading '/'.",
+      "reqIds": [
+        "REQ-44"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-add-a-lightweight-production-diagnostics-check-dev-only-or-gated-behind-a-query-param-that-can-confirm-whether-tailwind-theme-styles-are-loaded-e-g-detect-computed-background-color-or-presence-of-a-known-css-variable-to-help-validate-external-device-consistency",
+      "title": "Add a lightweight production diagnostics check (dev-only or gated behind a query param) that can confirm whether Tailwind/theme styles are loaded (e.g., detect computed background color or presence of a known CSS variable) to help validate external-device consistency.",
+      "reqIds": [
+        "REQ-45"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-implement-a-simple-return-to-originally-requested-page-authentication-redirect-flow-for-all-protected-restricted-routes-when-a-user-without-an-active-session-attempts-to-navigate-to-any-protected-route-including-via-navbar-click-or-direct-url-entry-redirect-them-to-login-while-preserving-the-originally-requested-path-including-any-query-string-after-a-successful-login-automatically-navigate-the-user-back-to-that-preserved-destination-if-no-destination-was-preserved-default-to-navigating-to",
+      "title": "Implement a simple “return to originally requested page” authentication redirect flow for all protected/restricted routes: when a user without an active session attempts to navigate to any protected route (including via Navbar click or direct URL entry), redirect them to /login while preserving the originally requested path (including any query string). After a successful login, automatically navigate the user back to that preserved destination; if no destination was preserved, default to navigating to /.",
+      "reqIds": [
+        "REQ-46"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-replace-the-current-per-section-access-approval-model-with-a-single-per-user-permission-model-based-on-the-user-document-fields-approved-boolean-and-allowedpages-string-persisted-in-the-existing-localstorage-user-records-since-the-current-project-uses-localstorage-backed-auth-storage",
+      "title": "Replace the current per-section access approval model with a single per-user permission model based on the user document fields `approved: boolean` and `allowedPages: string[]`, persisted in the existing localStorage user records (since the current project uses localStorage-backed auth/storage).",
+      "reqIds": [
+        "REQ-47"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-update-the-login-flow-to-follow-authenticate-user-credentials-fetch-the-user-record-from-storage-check-approved-load-allowedpages-and-establish-a-session-that-includes-the-computed-permissions-so-the-app-can-render-navigation-routes-accordingly",
+      "title": "Update the login flow to follow: authenticate user credentials, fetch the user record from storage, check `approved`, load `allowedPages`, and establish a session that includes the computed permissions so the app can render navigation/routes accordingly.",
+      "reqIds": [
+        "REQ-48"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-ensure-permissions-are-fetched-loaded-on-page-refresh-no-real-time-listeners-on-app-load-and-whenever-a-session-exists-re-load-the-current-user-s-stored-record-and-refresh-the-in-memory-permission-state-used-by-the-navbar-and-route-guards",
+      "title": "Ensure permissions are fetched/loaded on page refresh (no real-time listeners): on app load and whenever a session exists, re-load the current user's stored record and refresh the in-memory permission state used by the navbar and route guards.",
+      "reqIds": [
+        "REQ-49"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-enforce-page-level-authorization-for-all-internal-routes-using-allowedpages-update-existing-route-guards-so-that-if-the-current-route-s-page-id-is-not-present-in-allowedpages-the-user-is-redirected-to-a-safe-page-home-and-an-access-denied-reason-is-surfaced-via-the-existing-accessdenied-search-param-pattern",
+      "title": "Enforce page-level authorization for all internal routes using `allowedPages`: update existing route guards so that if the current route’s page ID is not present in `allowedPages`, the user is redirected to a safe page (home) and an access-denied reason is surfaced via the existing accessDenied/search-param pattern.",
+      "reqIds": [
+        "REQ-50"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-update-the-authenticated-navbar-to-dynamically-show-only-the-links-the-user-is-authorized-to-access-based-on-allowedpages-admin-still-sees-admin-and-all-sections",
+      "title": "Update the authenticated Navbar to dynamically show only the links the user is authorized to access based on `allowedPages` (admin still sees Admin and all sections).",
+      "reqIds": [
+        "REQ-51"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-extend-the-existing-admin-panel-user-management-to-support-1-an-approve-toggle-bound-to-approved-and-2-a-checkbox-list-for-pages-that-writes-allowedpages-back-to-the-stored-user-record-with-a-save-update-action-per-user-no-real-time-behavior",
+      "title": "Extend the existing Admin Panel user management to support: (1) an approve toggle bound to `approved`, and (2) a checkbox list for pages that writes `allowedPages` back to the stored user record, with a save/update action per user (no real-time behavior).",
+      "reqIds": [
+        "REQ-52"
+      ],
+      "version": 1
     }
   ],
   "new_feature_requests": [
@@ -222,6 +495,174 @@
     {
       "id": "AR-11",
       "summary": "Add a playful/comedic animated baby-themed sequence on the Login page (e.g., baby laughter + moving/running/kissing animation) to enhance the user experience",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-12",
+      "summary": "Ensure the /admin page includes the same premium glassmorphism navbar (as specified in the prompt) with Framer Motion animations and consistent 0.5s transitions",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-13",
+      "summary": "Change Registration to open as a popup/modal from the Login page (no navbar on auth screens), include fields name/email/password/confirm password with basic validation, then redirect back to Login after successful registration",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-14",
+      "summary": "Add basic member/access analytics: track and display total members and simple access counts/logs (e.g., page visits/login events) persisted in localStorage, visible in Admin panel",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-15",
+      "summary": "Fix missing top Logout / Navbar actions on both user and admin areas so authenticated pages consistently show Logout (and required nav links)",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-16",
+      "summary": "Add Admin-only ability to add/manage local video files (very large files) for a “My Videos” experience; users should be able to view/use added videos but not add them",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-17",
+      "summary": "Add Admin-only ability to add/manage local document files (e.g., PDFs) for a “My Files” experience; users can access files but cannot add them",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-18",
+      "summary": "Add Admin-controlled access management for navbar sections/pages: require approval per section and support access expiry date (day/month/year) for users",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-19",
+      "summary": "Enhance Login baby animation to be more impressive/premium: full-body laughing baby plus kissing baby/cartoon-style animations while keeping responsiveness and readable login form",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-20",
+      "summary": "Migrate auth + user data from localStorage simulation to Firebase Authentication + Firestore (users collection with role/status/allowedPages/expiryDate/createdAt) using .env-based config and src/firebase/firebase.js exports (auth, db)",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-21",
+      "summary": "Add Landing page that lets visitors choose between Admin Panel and User Panel entry points",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-22",
+      "summary": "Implement Firebase-based registration/login flow: block pending/rejected with popup \"Your account is waiting for admin approval.\"; enforce expiryDate (expired => logout + message); fetch user doc after auth; redirect to dashboard on success",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-23",
+      "summary": "Implement Admin auto-provisioning in Firebase: if no admin exists, create default admin in Firestore and corresponding Firebase Auth account; on admin login verify role=admin from Firestore",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-24",
+      "summary": "Implement per-user allowedPages-driven UI + route protection: show only allowed pages/buttons; if route not allowed redirect Home; auto-logout when expiryDate passes",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-25",
+      "summary": "Implement Videos library using Firestore videos collection and Google Drive preview embeds (admin can add driveLink; auto-convert /view?usp=sharing to /preview; users can read/view only; no autoplay)",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-26",
+      "summary": "Add Firestore security rules: users read only their own user doc; only admin can update role/status/expiryDate/allowedPages; only authenticated users can read videos; only admin can write videos",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-27",
+      "summary": "Create AuthContext to manage currentUser + role + status + logout and share auth state across app (Firebase-backed)",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-28",
+      "summary": "Update navbar spec: sticky navbar contains only Home, Telus→Videos, Portfolio (no Files/Notes/Logout in navbar) and ensure responsive behavior (mobile vertical layout, desktop horizontal) without overlap",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-29",
+      "summary": "Add dashboard welcome section below navbar with typewriter + subtle glow text (Welcome to My World, [UserName] / Welcome Admin, [AdminName]) plus animated avatar/graphic area",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-30",
+      "summary": "Make all sections (Home, Intelus, Live Section, Admin Panel) fully responsive across mobile/tablet/desktop with consistent layout/alignment/spacing/colors; prevent overlap/disappearing/broken elements across browsers",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-31",
+      "summary": "Admin-controlled Intelus content: manage all Intelus content from Admin Panel only; support Google Drive video links (embedded playback without redirect), direct video file uploads, and PDF/document uploads",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-32",
+      "summary": "Add enable/disable + delete controls for each admin-uploaded Intelus item; only enabled content is visible to users on the public/user side",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-33",
+      "summary": "Admin Panel file management system: file size validation, visible list of uploaded files, and open/download behavior directly without unnecessary redirection; enforce enabled-only visibility on public side",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-34",
+      "summary": "Live Section: display any admin-enabled content consistently across browsers/devices; ensure behavior is identical in production, new tabs, and external browsers",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-35",
+      "summary": "Fix production deployment issues where external/prod view shows missing elements/colors/broken layouts: correct asset paths, deployment configuration, and ensure all CSS/JS/resources load in production",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-36",
+      "summary": "Live Section external project link embed: allow admin to input an external website URL and show an embedded live preview (iframe) instead of redirecting, falling back when blocked by site security headers",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-37",
+      "summary": "Introduce a proper backend + database (not localStorage/static-only) to support admin control, uploads, enable/disable functionality, and consistent cross-browser visibility after deployment",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-41",
+      "summary": "Implement \"return to originally requested page\" auth flow: when an unauthenticated user clicks a protected link or visits a restricted route, redirect to /login and after successful login automatically navigate back to the originally attempted route (preserve intended destination)",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-42",
+      "summary": "Extend existing Firebase-backed system with admin approval + page-level permissions: store approved (boolean) and allowedPages (array of page IDs) in each Firestore user doc; on login/refresh fetch user doc, block unapproved users, render nav/routes based on allowedPages, and enforce route guards redirecting unauthorized access to a safe page; implement approval toggle + allowedPages checkbox editor in existing Admin Panel (no real-time listeners, minimal architectural changes)",
       "reqIds": [],
       "status": "pending"
     }

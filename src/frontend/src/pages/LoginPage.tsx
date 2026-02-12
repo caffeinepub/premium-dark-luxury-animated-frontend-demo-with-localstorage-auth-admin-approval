@@ -1,20 +1,32 @@
-import { useState, FormEvent } from 'react';
-import { useNavigate, Link } from '@tanstack/react-router';
+import { useState, FormEvent, useEffect } from 'react';
+import { useNavigate, useSearch } from '@tanstack/react-router';
 import { LogIn, Mail, Lock } from 'lucide-react';
 import { login } from '../utils/auth';
+import { recordLogin } from '../utils/analytics';
 import { Button } from '../components/ui/button';
 import { Input } from '../components/ui/input';
 import { Label } from '../components/ui/label';
 import { Alert, AlertDescription } from '../components/ui/alert';
 import AnimatedRouteWrapper from '../components/motion/AnimatedRouteWrapper';
 import BabyComedyLoginAnimation from '../components/motion/BabyComedyLoginAnimation';
+import RegisterModal from '../components/auth/RegisterModal';
+import { getReturnTo, clearReturnTo } from '../utils/returnTo';
 
 export default function LoginPage() {
   const navigate = useNavigate();
+  const search = useSearch({ strict: false }) as { register?: string; returnTo?: string };
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  const [registerModalOpen, setRegisterModalOpen] = useState(false);
+
+  // Auto-open register modal if coming from /register redirect
+  useEffect(() => {
+    if (search?.register === 'true') {
+      setRegisterModalOpen(true);
+    }
+  }, [search]);
 
   const handleSubmit = (e: FormEvent) => {
     e.preventDefault();
@@ -24,8 +36,18 @@ export default function LoginPage() {
     const result = login(email, password);
     
     if (result.success) {
+      // Record successful login in analytics
+      recordLogin();
+      
+      // Get the return-to destination
+      const returnTo = getReturnTo(search);
+      clearReturnTo();
+      
+      // Navigate to the preserved destination or default to home
+      const destination = returnTo && returnTo !== '/login' && returnTo !== '/register' ? returnTo : '/';
+      
       setTimeout(() => {
-        navigate({ to: '/' });
+        navigate({ to: destination as any });
       }, 100);
     } else {
       setError(result.message);
@@ -106,14 +128,26 @@ export default function LoginPage() {
             <div className="mt-6 text-center">
               <p className="text-gray-400">
                 Don't have an account?{' '}
-                <Link to="/register" className="text-neon-blue transition-colors hover:text-neon-blue/80">
+                <button
+                  type="button"
+                  onClick={() => setRegisterModalOpen(true)}
+                  className="text-neon-blue transition-colors hover:text-neon-blue/80 underline"
+                >
                   Register here
-                </Link>
+                </button>
               </p>
             </div>
           </div>
         </div>
       </div>
+
+      <RegisterModal
+        open={registerModalOpen}
+        onOpenChange={setRegisterModalOpen}
+        onSuccess={() => {
+          // Modal already closed, user stays on login page
+        }}
+      />
     </AnimatedRouteWrapper>
   );
 }

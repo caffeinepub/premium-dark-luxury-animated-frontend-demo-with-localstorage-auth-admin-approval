@@ -1,4 +1,4 @@
-import { getUsers, setUsers, setSession, clearSession, type User, type Session } from './storage';
+import { getUsers, setUsers, setSession, clearSession, getUser, type User, type Session } from './storage';
 
 export function register(name: string, email: string, password: string): { success: boolean; message: string } {
   const users = getUsers();
@@ -12,7 +12,8 @@ export function register(name: string, email: string, password: string): { succe
     password,
     name,
     role: 'user',
-    status: 'pending',
+    approved: false,
+    allowedPages: [],
     registeredAt: new Date().toISOString(),
   };
 
@@ -30,7 +31,7 @@ export function login(email: string, password: string): { success: boolean; mess
     return { success: false, message: 'Invalid email or password' };
   }
 
-  if (user.status === 'pending' || user.status === 'rejected') {
+  if (!user.approved && user.role !== 'admin') {
     return { success: false, message: 'Your account is waiting for admin approval.' };
   }
 
@@ -38,6 +39,7 @@ export function login(email: string, password: string): { success: boolean; mess
     email: user.email,
     name: user.name,
     role: user.role,
+    allowedPages: user.allowedPages,
   };
 
   setSession(session);
@@ -53,17 +55,17 @@ export function approveUser(email: string): void {
   const userIndex = users.findIndex(u => u.email === email);
   
   if (userIndex !== -1 && users[userIndex].role !== 'admin') {
-    users[userIndex].status = 'approved';
+    users[userIndex].approved = true;
     setUsers(users);
   }
 }
 
-export function rejectUser(email: string): void {
+export function updateUserPermissions(email: string, allowedPages: string[]): void {
   const users = getUsers();
   const userIndex = users.findIndex(u => u.email === email);
   
   if (userIndex !== -1 && users[userIndex].role !== 'admin') {
-    users[userIndex].status = 'rejected';
+    users[userIndex].allowedPages = allowedPages;
     setUsers(users);
   }
 }

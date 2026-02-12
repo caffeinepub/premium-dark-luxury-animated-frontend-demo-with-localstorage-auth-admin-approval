@@ -12,7 +12,8 @@ export function seedAdmin(): void {
       password: 'admin123',
       name: 'Admin',
       role: 'admin',
-      status: 'approved',
+      approved: true,
+      allowedPages: ['home', 'videos', 'portfolio', 'intelus', 'live', 'myVideos', 'myFiles', 'admin'],
       registeredAt: new Date().toISOString(),
     };
 

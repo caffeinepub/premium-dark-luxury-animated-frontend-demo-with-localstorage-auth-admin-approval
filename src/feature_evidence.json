@@ -2,59 +2,135 @@
   "kind": "feature_evidence_report",
   "features": [
     {
-      "featureId": "feature-add-a-playful-comedic-baby-themed-animated-sequence-to-the-login-page-that-visually-conveys-baby-laughter-plus-motion-beats-like-moving-running-and-kissing-e-g-hearts-while-keeping-the-existing-login-form-fully-functional-and-readable",
-      "featureTitle": "Add a playful, comedic baby-themed animated sequence to the Login page that visually conveys “baby laughter” plus motion beats like moving/running and kissing (e.g., hearts), while keeping the existing login form fully functional and readable.",
+      "featureId": "feature-replace-the-current-per-section-access-approval-model-with-a-single-per-user-permission-model-based-on-the-user-document-fields-approved-boolean-and-allowedpages-string-persisted-in-the-existing-localstorage-user-records-since-the-current-project-uses-localstorage-backed-auth-storage",
+      "featureTitle": "Replace the current per-section access approval model with a single per-user permission model based on the user document fields `approved: boolean` and `allowedPages: string[]`, persisted in the existing localStorage user records (since the current project uses localStorage-backed auth/storage).",
       "files": [
-        "frontend/src/components/motion/BabyComedyLoginAnimation.tsx",
-        "frontend/src/pages/LoginPage.tsx"
+        "frontend/src/hooks/useAccessApprovals.ts",
+        "frontend/src/utils/accessApprovals.ts",
+        "frontend/src/utils/seed.ts",
+        "frontend/src/utils/storage.ts"
       ],
       "components": [
         "core-infrastructure@1.0.2",
         "shadcn-ui@1.0.0",
         "build-template-react@1.0.0",
         "initial-app@1.0.0",
-        "github-export-icp-cli@1.0.0"
+        "github-export-icp-cli@1.0.0",
+        "authorization@4.0.0",
+        "blob-storage@4.0.0",
+        "user-approval@3.0.0"
       ],
       "testIds": [
-        "REQ-16"
+        "REQ-47"
       ],
       "confidence": "high"
     },
     {
-      "featureId": "feature-implement-the-login-page-baby-themed-animation-using-framer-motion-with-consistent-0-5s-transition-timing-for-entrance-and-key-motion-beats-and-ensure-it-is-responsive-works-on-mobile-and-desktop-without-overflowing-the-login-card-container",
-      "featureTitle": "Implement the Login page baby-themed animation using Framer Motion with consistent 0.5s transition timing for entrance and key motion beats, and ensure it is responsive (works on mobile and desktop without overflowing the login card/container).",
+      "featureId": "feature-update-the-login-flow-to-follow-authenticate-user-credentials-fetch-the-user-record-from-storage-check-approved-load-allowedpages-and-establish-a-session-that-includes-the-computed-permissions-so-the-app-can-render-navigation-routes-accordingly",
+      "featureTitle": "Update the login flow to follow: authenticate user credentials, fetch the user record from storage, check `approved`, load `allowedPages`, and establish a session that includes the computed permissions so the app can render navigation/routes accordingly.",
       "files": [
-        "frontend/src/components/motion/BabyComedyLoginAnimation.tsx",
-        "frontend/src/pages/LoginPage.tsx",
-        "frontend/src/utils/motion.ts"
+        "frontend/src/utils/auth.ts"
       ],
       "components": [
         "core-infrastructure@1.0.2",
         "shadcn-ui@1.0.0",
         "build-template-react@1.0.0",
         "initial-app@1.0.0",
-        "github-export-icp-cli@1.0.0"
+        "github-export-icp-cli@1.0.0",
+        "authorization@4.0.0",
+        "blob-storage@4.0.0",
+        "user-approval@3.0.0"
       ],
       "testIds": [
-        "REQ-17"
+        "REQ-48"
       ],
       "confidence": "high"
     },
     {
-      "featureId": "feature-add-generated-static-visual-assets-illustrations-overlays-required-for-the-baby-themed-animation-under-frontend-public-assets-generated-and-render-them-directly-from-the-frontend-no-backend-routing",
-      "featureTitle": "Add generated static visual assets (illustrations/overlays) required for the baby-themed animation under frontend/public/assets/generated and render them directly from the frontend (no backend routing).",
+      "featureId": "feature-ensure-permissions-are-fetched-loaded-on-page-refresh-no-real-time-listeners-on-app-load-and-whenever-a-session-exists-re-load-the-current-user-s-stored-record-and-refresh-the-in-memory-permission-state-used-by-the-navbar-and-route-guards",
+      "featureTitle": "Ensure permissions are fetched/loaded on page refresh (no real-time listeners): on app load and whenever a session exists, re-load the current user's stored record and refresh the in-memory permission state used by the navbar and route guards.",
       "files": [
-        "frontend/src/components/motion/BabyComedyLoginAnimation.tsx"
+        "frontend/src/components/layout/AppLayout.tsx",
+        "frontend/src/hooks/useSession.ts"
       ],
       "components": [
         "core-infrastructure@1.0.2",
         "shadcn-ui@1.0.0",
         "build-template-react@1.0.0",
         "initial-app@1.0.0",
-        "github-export-icp-cli@1.0.0"
+        "github-export-icp-cli@1.0.0",
+        "authorization@4.0.0",
+        "blob-storage@4.0.0",
+        "user-approval@3.0.0"
       ],
       "testIds": [
-        "REQ-18"
+        "REQ-49"
+      ],
+      "confidence": "high"
+    },
+    {
+      "featureId": "feature-enforce-page-level-authorization-for-all-internal-routes-using-allowedpages-update-existing-route-guards-so-that-if-the-current-route-s-page-id-is-not-present-in-allowedpages-the-user-is-redirected-to-a-safe-page-home-and-an-access-denied-reason-is-surfaced-via-the-existing-accessdenied-search-param-pattern",
+      "featureTitle": "Enforce page-level authorization for all internal routes using `allowedPages`: update existing route guards so that if the current route’s page ID is not present in `allowedPages`, the user is redirected to a safe page (home) and an access-denied reason is surfaced via the existing accessDenied/search-param pattern.",
+      "files": [
+        "frontend/src/App.tsx",
+        "frontend/src/components/routing/SectionRouteGuard.tsx"
+      ],
+      "components": [
+        "core-infrastructure@1.0.2",
+        "shadcn-ui@1.0.0",
+        "build-template-react@1.0.0",
+        "initial-app@1.0.0",
+        "github-export-icp-cli@1.0.0",
+        "authorization@4.0.0",
+        "blob-storage@4.0.0",
+        "user-approval@3.0.0"
+      ],
+      "testIds": [
+        "REQ-50"
+      ],
+      "confidence": "high"
+    },
+    {
+      "featureId": "feature-update-the-authenticated-navbar-to-dynamically-show-only-the-links-the-user-is-authorized-to-access-based-on-allowedpages-admin-still-sees-admin-and-all-sections",
+      "featureTitle": "Update the authenticated Navbar to dynamically show only the links the user is authorized to access based on `allowedPages` (admin still sees Admin and all sections).",
+      "files": [
+        "frontend/src/components/nav/Navbar.tsx",
+        "frontend/src/pages/HomePage.tsx"
+      ],
+      "components": [
+        "core-infrastructure@1.0.2",
+        "shadcn-ui@1.0.0",
+        "build-template-react@1.0.0",
+        "initial-app@1.0.0",
+        "github-export-icp-cli@1.0.0",
+        "authorization@4.0.0",
+        "blob-storage@4.0.0",
+        "user-approval@3.0.0"
+      ],
+      "testIds": [
+        "REQ-51"
+      ],
+      "confidence": "high"
+    },
+    {
+      "featureId": "feature-extend-the-existing-admin-panel-user-management-to-support-1-an-approve-toggle-bound-to-approved-and-2-a-checkbox-list-for-pages-that-writes-allowedpages-back-to-the-stored-user-record-with-a-save-update-action-per-user-no-real-time-behavior",
+      "featureTitle": "Extend the existing Admin Panel user management to support: (1) an approve toggle bound to `approved`, and (2) a checkbox list for pages that writes `allowedPages` back to the stored user record, with a save/update action per user (no real-time behavior).",
+      "files": [
+        "frontend/src/components/StatusBadge.tsx",
+        "frontend/src/pages/AdminPage.tsx"
+      ],
+      "components": [
+        "core-infrastructure@1.0.2",
+        "shadcn-ui@1.0.0",
+        "build-template-react@1.0.0",
+        "initial-app@1.0.0",
+        "github-export-icp-cli@1.0.0",
+        "authorization@4.0.0",
+        "blob-storage@4.0.0",
+        "user-approval@3.0.0"
+      ],
+      "testIds": [
+        "REQ-52"
       ],
       "confidence": "high"
     }

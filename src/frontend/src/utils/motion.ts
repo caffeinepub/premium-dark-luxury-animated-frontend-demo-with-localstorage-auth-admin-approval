@@ -14,7 +14,17 @@ export const ANIMATION_CLASSES = {
   fadeInDown: 'animate-fade-in-down',
   scaleIn: 'animate-scale-in',
   slideDown: 'animate-slide-down',
-  stagger1: 'animate-stagger-1',
-  stagger2: 'animate-stagger-2',
-  stagger3: 'animate-stagger-3',
+  dropdownOpen: 'animate-dropdown-open',
+  dropdownClose: 'animate-dropdown-close',
+  modalIn: 'animate-modal-in',
+  modalOut: 'animate-modal-out',
+  stagger1: 'animation-delay-100',
+  stagger2: 'animation-delay-200',
+  stagger3: 'animation-delay-300',
+};
+
+// Navbar-specific motion constants
+export const NAVBAR_MOTION = {
+  hoverDuration: MOTION_DURATION,
+  dropdownDuration: MOTION_DURATION,
 };

@@ -7,8 +7,13 @@ import HomePage from './pages/HomePage';
 import VideosPage from './pages/VideosPage';
 import PortfolioPage from './pages/PortfolioPage';
 import AdminPage from './pages/AdminPage';
+import MyVideosPage from './pages/MyVideosPage';
+import MyFilesPage from './pages/MyFilesPage';
+import IntelusPage from './pages/IntelusPage';
+import LivePage from './pages/LivePage';
 import ProtectedRoute from './components/routing/ProtectedRoute';
 import AdminRoute from './components/routing/AdminRoute';
+import SectionRouteGuard from './components/routing/SectionRouteGuard';
 import AppLayout from './components/layout/AppLayout';
 
 // Root route with layout
@@ -33,13 +38,15 @@ const registerRoute = createRoute({
   component: RegisterPage,
 });
 
-// Protected routes
+// Protected routes with page-level guards
 const homeRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: '/',
   component: () => (
     <ProtectedRoute>
-      <HomePage />
+      <SectionRouteGuard pageId="home">
+        <HomePage />
+      </SectionRouteGuard>
     </ProtectedRoute>
   ),
 });
@@ -49,7 +56,9 @@ const videosRoute = createRoute({
   path: '/videos',
   component: () => (
     <ProtectedRoute>
-      <VideosPage />
+      <SectionRouteGuard pageId="videos">
+        <VideosPage />
+      </SectionRouteGuard>
     </ProtectedRoute>
   ),
 });
@@ -59,7 +68,57 @@ const portfolioRoute = createRoute({
   path: '/portfolio',
   component: () => (
     <ProtectedRoute>
-      <PortfolioPage />
+      <SectionRouteGuard pageId="portfolio">
+        <PortfolioPage />
+      </SectionRouteGuard>
+    </ProtectedRoute>
+  ),
+});
+
+const intelusRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: '/intelus',
+  component: () => (
+    <ProtectedRoute>
+      <SectionRouteGuard pageId="intelus">
+        <IntelusPage />
+      </SectionRouteGuard>
+    </ProtectedRoute>
+  ),
+});
+
+const liveRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: '/live',
+  component: () => (
+    <ProtectedRoute>
+      <SectionRouteGuard pageId="live">
+        <LivePage />
+      </SectionRouteGuard>
+    </ProtectedRoute>
+  ),
+});
+
+const myVideosRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: '/my-videos',
+  component: () => (
+    <ProtectedRoute>
+      <SectionRouteGuard pageId="myVideos">
+        <MyVideosPage />
+      </SectionRouteGuard>
+    </ProtectedRoute>
+  ),
+});
+
+const myFilesRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: '/my-files',
+  component: () => (
+    <ProtectedRoute>
+      <SectionRouteGuard pageId="myFiles">
+        <MyFilesPage />
+      </SectionRouteGuard>
     </ProtectedRoute>
   ),
 });
@@ -82,6 +141,10 @@ const routeTree = rootRoute.addChildren([
   homeRoute,
   videosRoute,
   portfolioRoute,
+  intelusRoute,
+  liveRoute,
+  myVideosRoute,
+  myFilesRoute,
   adminRoute,
 ]);
 

@@ -1,84 +1,146 @@
 {
   "kind": "implementation_plan",
   "version": "1.0",
-  "title": "Playful baby-themed Framer Motion animation on Login page",
+  "title": "Per-user approval + allowedPages route protection (localStorage auth)",
   "requirements": [
     {
-      "id": "REQ-16",
-      "summary": "Add a visible baby-themed comedic animation section to the Login page without impacting existing form behavior, readability, or interactions.",
+      "id": "REQ-47",
+      "summary": "Replace section-based access approvals with per-user `approved` + `allowedPages` persisted in localStorage user records, with admin bypass.",
       "acceptanceCriteria": [
-        "The Login page shows a clearly visible baby-themed animation section on initial load.",
-        "The animation includes distinct, readable visual beats that suggest: laughter, moving/running, and kissing/hearts.",
-        "The login form (email/password, submit, errors) works exactly as before and remains the primary actionable UI.",
-        "The animation does not block typing/clicking on any inputs or buttons and does not cause layout shift that hides the form."
+        "Each non-admin user record in localStorage includes `approved` (boolean) and `allowedPages` (array of page IDs).",
+        "Existing status-based fields/logic (`status: pending/approved/rejected`) are removed or mapped consistently so the rest of the app no longer depends on the old status model.",
+        "Admin users continue to bypass page permission checks (admin has access to all internal pages)."
       ],
       "file_operations": [
         {
-          "path": "frontend/src/components/motion/BabyComedyLoginAnimation.tsx",
-          "operation": "create",
-          "description": "Create a self-contained baby-themed comedic animation component for the Login page that visually conveys laughter (bouncy/joyful beats), running/motion (streaks/dust), and kissing/hearts (heart pop overlays). Ensure the animation layer uses non-interactive presentation (e.g., no pointer capture) so it cannot block form interactions."
+          "path": "frontend/src/utils/storage.ts",
+          "operation": "modify",
+          "description": "Update `User` and `Session` types to use `approved: boolean` and `allowedPages: string[]` (remove `status`). Add small helpers to read/update a single user record by email for admin updates and session refresh (keep localStorage keys and overall structure intact)."
         },
         {
-          "path": "frontend/src/pages/LoginPage.tsx",
+          "path": "frontend/src/utils/seed.ts",
           "operation": "modify",
-          "description": "Compose the new baby-themed animation component into the existing Login page layout while keeping the login form logic, validation, and error messaging unchanged. Place the animation in a dedicated section within the existing glass panel so the form remains the primary actionable UI and remains fully readable."
+          "description": "Update default seeded admin record to use `approved: true` and `allowedPages` granting all internal pages, ensuring admin continues to bypass checks."
+        },
+        {
+          "path": "frontend/src/utils/accessApprovals.ts",
+          "operation": "delete",
+          "description": "Remove the legacy per-section approvals storage and subscription utilities now replaced by `approved` + `allowedPages` on the user record."
+        },
+        {
+          "path": "frontend/src/hooks/useAccessApprovals.ts",
+          "operation": "delete",
+          "description": "Remove the legacy per-section access hook; page access should come from session `allowedPages` with admin bypass."
         }
       ]
     },
     {
-      "id": "REQ-17",
-      "summary": "Implement the Login baby-themed animation using Framer Motion with consistent 0.5s timing and responsive behavior that never overflows the login container.",
+      "id": "REQ-48",
+      "summary": "Update login to validate credentials, load the stored user record, enforce `approved`, and store session permissions for immediate navbar/guard use.",
       "acceptanceCriteria": [
-        "Framer Motion is used for the new Login page animation elements (not only CSS keyframes).",
-        "Entrance and interaction/motion transitions used for the new sequence are consistent with 0.5s duration (matching the app’s animation standard).",
-        "On small screens, the animation scales/reflows so the login form remains fully visible without horizontal scrolling."
+        "If credentials are invalid, login fails with the existing invalid-credentials message behavior.",
+        "If `approved` is false, login is blocked and shows the exact message: \"Your account is waiting for admin approval.\"",
+        "On successful login, the session/permission state is available immediately for Navbar visibility and route guards."
       ],
       "file_operations": [
         {
-          "path": "frontend/src/utils/motion.ts",
+          "path": "frontend/src/utils/auth.ts",
           "operation": "modify",
-          "description": "Define shared motion constants/utilities for the app (e.g., a single 0.5s duration value and a standard transition config) to enforce consistent timing across the new Login animation beats."
-        },
-        {
-          "path": "frontend/src/components/motion/BabyComedyLoginAnimation.tsx",
-          "operation": "modify",
-          "description": "Implement the animation using Framer Motion primitives and the shared 0.5s transition timing from frontend/src/utils/motion.ts. Ensure the component is responsive (scales down, uses container-bounded sizing, and prevents overflow) so it fits within the login card/container on mobile and desktop."
+          "description": "Update `register` to create users with `approved: false` and a default `allowedPages` (likely minimal like `[\"home\"]` or empty per current app needs). Update `login` to: (1) authenticate credentials, (2) load user record, (3) block if `approved` is false with the exact required message, (4) set session including `allowedPages` so UI guards/nav can read it immediately."
         },
         {
           "path": "frontend/src/pages/LoginPage.tsx",
           "operation": "modify",
-          "description": "Adjust the Login page composition (layout and spacing only) to accommodate the animation section without introducing horizontal scrolling or layout shift that could hide the form. Keep all auth rules and blocked-login messaging behavior exactly as-is."
+          "description": "Keep existing invalid-credentials behavior and wiring. Ensure the blocked-not-approved case surfaces the exact English message from the updated `login()` return value. Uses existing shadcn/ui components (Button/Input/Alert); verify the component's usage instructions before implementing."
         }
       ]
     },
     {
-      "id": "REQ-18",
-      "summary": "Add required generated static assets under frontend/public/assets/generated and render them via static frontend paths (no backend usage).",
+      "id": "REQ-49",
+      "summary": "On app load/refresh, re-load the current user record from localStorage and refresh in-memory permission state used by navbar and guards (no realtime listeners).",
       "acceptanceCriteria": [
-        "All new images are stored in frontend/public/assets/generated.",
-        "The Login page references these assets via static paths and the animation renders correctly in production builds.",
-        "No backend or remote image hosting is introduced for these assets."
+        "After a hard refresh, the user remains authenticated (if session exists) and the app re-evaluates `approved` and `allowedPages` from storage before rendering internal navigation items.",
+        "If an admin changes a user’s `allowedPages`, the change is reflected on the user’s next login or page refresh (without using any listener/subscription to external services)."
       ],
       "file_operations": [
         {
-          "path": "frontend/public/assets/generated/baby-laugh.dim_512x512.png",
-          "operation": "create",
-          "description": "Add generated static image asset for the baby character illustration (transparent background) at frontend/public/assets/generated/baby-laugh.dim_512x512.png and ensure it is committed as a frontend static asset."
-        },
-        {
-          "path": "frontend/public/assets/generated/kiss-hearts.dim_256x256.png",
-          "operation": "create",
-          "description": "Add generated static image asset for heart/kiss overlay icons (transparent background) at frontend/public/assets/generated/kiss-hearts.dim_256x256.png and ensure it is committed as a frontend static asset."
-        },
-        {
-          "path": "frontend/public/assets/generated/run-streaks.dim_256x256.png",
-          "operation": "create",
-          "description": "Add generated static image asset for running motion streaks/dust puffs (transparent background) at frontend/public/assets/generated/run-streaks.dim_256x256.png and ensure it is committed as a frontend static asset."
-        },
-        {
-          "path": "frontend/src/components/motion/BabyComedyLoginAnimation.tsx",
+          "path": "frontend/src/hooks/useSession.ts",
           "operation": "modify",
-          "description": "Reference and render the new static assets using direct static paths to frontend/public/assets/generated/baby-laugh.dim_512x512.png, frontend/public/assets/generated/kiss-hearts.dim_256x256.png, and frontend/public/assets/generated/run-streaks.dim_256x256.png within the Framer Motion sequence, without introducing any backend routing or remote hosting."
+          "description": "Enhance session initialization to re-hydrate/refresh permissions from the current user's stored record when a session exists (e.g., on first mount). If the user is no longer `approved`, clear session and trigger redirect behavior via existing guards. Avoid introducing any real-time subscription pattern beyond existing session-change event handling."
+        },
+        {
+          "path": "frontend/src/components/layout/AppLayout.tsx",
+          "operation": "modify",
+          "description": "Ensure navbar visibility does not flash unauthorized links: rely on the refreshed session state from `useSession()` so Navbar renders only after permissions are up to date."
+        }
+      ]
+    },
+    {
+      "id": "REQ-50",
+      "summary": "Protect all internal routes using `allowedPages` page IDs with admin bypass, redirecting disallowed navigation to home with accessDenied/reason search params.",
+      "acceptanceCriteria": [
+        "Unauthenticated users are still redirected to /login with the existing return-to behavior preserved.",
+        "Authenticated, approved, non-admin users who navigate directly to a disallowed URL are redirected to `/` with a clear access denied reason (English), and the protected page does not render.",
+        "All existing internal routes in `frontend/src/App.tsx` remain protected (no new public internal routes introduced)."
+      ],
+      "file_operations": [
+        {
+          "path": "frontend/src/components/routing/SectionRouteGuard.tsx",
+          "operation": "modify",
+          "description": "Repurpose the guard to page-level authorization: accept a `pageId: string` (or rename prop internally while keeping file minimal), read current session, allow admins, and for approved non-admin users enforce `allowedPages` membership. On denial, redirect to `/` with `accessDenied=true` and a clear English `reason` via the existing search-param pattern. Preserve unauthenticated redirect-to-login behavior using existing return-to helper."
+        },
+        {
+          "path": "frontend/src/components/routing/ProtectedRoute.tsx",
+          "operation": "modify",
+          "description": "Keep unauthenticated redirect behavior and return-to preservation intact. Update analytics page-id mapping as needed to include the internal pages currently tracked, without introducing new public routes."
+        },
+        {
+          "path": "frontend/src/App.tsx",
+          "operation": "modify",
+          "description": "Update all protected routes to use the page-level guard with the required page IDs (minimum: home, intelus, videos, files, live, admin as applicable to current routes). Ensure every internal route remains wrapped by `ProtectedRoute` and the updated guard; do not introduce new public internal routes."
+        }
+      ]
+    },
+    {
+      "id": "REQ-51",
+      "summary": "Update Navbar to show only links present in `allowedPages` for non-admin users, while admins see all internal links including Admin; logout always visible.",
+      "acceptanceCriteria": [
+        "For non-admin users, each Navbar item is visible only if its corresponding page ID is present in `allowedPages`.",
+        "For admin users, the Navbar continues to show all internal links and the Admin link.",
+        "Logout remains visible and functional for all authenticated users."
+      ],
+      "file_operations": [
+        {
+          "path": "frontend/src/components/nav/Navbar.tsx",
+          "operation": "modify",
+          "description": "Remove legacy section-access checks and instead derive visibility from `session.allowedPages` (admin bypass). Keep existing responsive layout, dropdown behavior, and logout behavior. Uses existing shadcn/ui components (Button/DropdownMenu); verify the component's usage instructions before implementing."
+        },
+        {
+          "path": "frontend/src/pages/HomePage.tsx",
+          "operation": "modify",
+          "description": "Optionally (minimal change) hide or disable navigation cards that the user is not allowed to access based on `session.allowedPages`, while keeping the accessDenied/reason alert behavior intact."
+        }
+      ]
+    },
+    {
+      "id": "REQ-52",
+      "summary": "Extend Admin Panel user management to edit `approved` and `allowedPages` via toggles/checkboxes and save updates to localStorage per user (no realtime).",
+      "acceptanceCriteria": [
+        "Admin can view the user list and toggle `approved` for a user; changes persist to storage immediately.",
+        "Admin can select allowed pages via checkboxes (page IDs at minimum: home, intelus, videos, files, live, admin as applicable to current routes).",
+        "Saving updates persists `allowedPages` for that user and the UI reflects the saved state without requiring a full page refresh.",
+        "No real-time listeners are introduced (updates apply on the user’s next login/refresh per REQ-49)."
+      ],
+      "file_operations": [
+        {
+          "path": "frontend/src/pages/AdminPage.tsx",
+          "operation": "modify",
+          "description": "Replace status-based user management with: (1) an `approved` toggle bound to the user record, and (2) an `allowedPages` checkbox list with a per-user Save/Update action that persists to localStorage. Remove per-section access controls (expiry dates and section approvals UI). Uses existing shadcn/ui components (Tabs/Table/Checkbox/Button/Input); verify the component's usage instructions before implementing."
+        },
+        {
+          "path": "frontend/src/components/StatusBadge.tsx",
+          "operation": "modify",
+          "description": "Update or simplify the badge to reflect `approved` boolean (e.g., Approved / Waiting for approval) so Admin UI no longer depends on `status: pending/approved/rejected`."
         }
       ]
     }

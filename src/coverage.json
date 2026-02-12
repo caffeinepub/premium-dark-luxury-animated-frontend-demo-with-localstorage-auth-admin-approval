@@ -1,75 +1,119 @@
 {
   "kind": "coverage_report",
   "version": "1.0",
-  "generatedAt": "2026-02-12T16:37:00.395Z",
+  "generatedAt": "2026-02-12T20:36:25.743Z",
   "sources": {
     "buildRequest": true,
     "implementationPlan": true
   },
   "requirements": {
-    "total": 3,
-    "implemented": 3,
+    "total": 6,
+    "implemented": 6,
     "items": [
       {
-        "id": "REQ-16",
-        "summary": "Add a playful, comedic baby-themed animated sequence to the Login page that visually conveys “baby laughter” plus motion beats like moving/running and kissing (e.g., hearts), while keeping the existing login form fully functional and readable.",
+        "id": "REQ-47",
+        "summary": "Replace the current per-section access approval model with a single per-user permission model based on the user document fields `approved: boolean` and `allowedPages: string[]`, persisted in the existing localStorage user records (since the current project uses localStorage-backed auth/storage).",
         "status": "implemented",
         "plannedFiles": [
-          "frontend/src/components/motion/BabyComedyLoginAnimation.tsx",
-          "frontend/src/pages/LoginPage.tsx"
+          "frontend/src/utils/storage.ts",
+          "frontend/src/utils/seed.ts",
+          "frontend/src/utils/accessApprovals.ts",
+          "frontend/src/hooks/useAccessApprovals.ts"
         ],
         "matchedFiles": [
-          "frontend/src/components/motion/BabyComedyLoginAnimation.tsx",
-          "frontend/src/pages/LoginPage.tsx"
+          "frontend/src/utils/storage.ts",
+          "frontend/src/utils/seed.ts",
+          "frontend/src/utils/accessApprovals.ts",
+          "frontend/src/hooks/useAccessApprovals.ts"
         ]
       },
       {
-        "id": "REQ-17",
-        "summary": "Implement the Login page baby-themed animation using Framer Motion with consistent 0.5s transition timing for entrance and key motion beats, and ensure it is responsive (works on mobile and desktop without overflowing the login card/container).",
+        "id": "REQ-48",
+        "summary": "Update the login flow to follow: authenticate user credentials, fetch the user record from storage, check `approved`, load `allowedPages`, and establish a session that includes the computed permissions so the app can render navigation/routes accordingly.",
         "status": "implemented",
         "plannedFiles": [
-          "frontend/src/utils/motion.ts",
-          "frontend/src/components/motion/BabyComedyLoginAnimation.tsx",
+          "frontend/src/utils/auth.ts",
           "frontend/src/pages/LoginPage.tsx"
         ],
         "matchedFiles": [
-          "frontend/src/utils/motion.ts",
-          "frontend/src/components/motion/BabyComedyLoginAnimation.tsx",
-          "frontend/src/pages/LoginPage.tsx"
+          "frontend/src/utils/auth.ts"
         ]
       },
       {
-        "id": "REQ-18",
-        "summary": "Add generated static visual assets (illustrations/overlays) required for the baby-themed animation under frontend/public/assets/generated and render them directly from the frontend (no backend routing).",
+        "id": "REQ-49",
+        "summary": "Ensure permissions are fetched/loaded on page refresh (no real-time listeners): on app load and whenever a session exists, re-load the current user's stored record and refresh the in-memory permission state used by the navbar and route guards.",
         "status": "implemented",
         "plannedFiles": [
-          "frontend/public/assets/generated/baby-laugh.dim_512x512.png",
-          "frontend/public/assets/generated/kiss-hearts.dim_256x256.png",
-          "frontend/public/assets/generated/run-streaks.dim_256x256.png",
-          "frontend/src/components/motion/BabyComedyLoginAnimation.tsx"
+          "frontend/src/hooks/useSession.ts",
+          "frontend/src/components/layout/AppLayout.tsx"
         ],
         "matchedFiles": [
-          "frontend/public/assets/generated/baby-laugh.dim_512x512.png",
-          "frontend/public/assets/generated/kiss-hearts.dim_256x256.png",
-          "frontend/public/assets/generated/run-streaks.dim_256x256.png",
-          "frontend/src/components/motion/BabyComedyLoginAnimation.tsx"
+          "frontend/src/hooks/useSession.ts",
+          "frontend/src/components/layout/AppLayout.tsx"
+        ]
+      },
+      {
+        "id": "REQ-50",
+        "summary": "Enforce page-level authorization for all internal routes using `allowedPages`: update existing route guards so that if the current route’s page ID is not present in `allowedPages`, the user is redirected to a safe page (home) and an access-denied reason is surfaced via the existing accessDenied/search-param pattern.",
+        "status": "implemented",
+        "plannedFiles": [
+          "frontend/src/components/routing/SectionRouteGuard.tsx",
+          "frontend/src/components/routing/ProtectedRoute.tsx",
+          "frontend/src/App.tsx"
+        ],
+        "matchedFiles": [
+          "frontend/src/components/routing/SectionRouteGuard.tsx",
+          "frontend/src/App.tsx"
+        ]
+      },
+      {
+        "id": "REQ-51",
+        "summary": "Update the authenticated Navbar to dynamically show only the links the user is authorized to access based on `allowedPages` (admin still sees Admin and all sections).",
+        "status": "implemented",
+        "plannedFiles": [
+          "frontend/src/components/nav/Navbar.tsx",
+          "frontend/src/pages/HomePage.tsx"
+        ],
+        "matchedFiles": [
+          "frontend/src/components/nav/Navbar.tsx",
+          "frontend/src/pages/HomePage.tsx"
+        ]
+      },
+      {
+        "id": "REQ-52",
+        "summary": "Extend the existing Admin Panel user management to support: (1) an approve toggle bound to `approved`, and (2) a checkbox list for pages that writes `allowedPages` back to the stored user record, with a save/update action per user (no real-time behavior).",
+        "status": "implemented",
+        "plannedFiles": [
+          "frontend/src/pages/AdminPage.tsx",
+          "frontend/src/components/StatusBadge.tsx"
+        ],
+        "matchedFiles": [
+          "frontend/src/pages/AdminPage.tsx",
+          "frontend/src/components/StatusBadge.tsx"
         ]
       }
     ]
   },
   "changedFiles": [
+    "backend/user-approval/approval.mo",
     "build-request.json",
-    "build-template/README.md",
+    "caffeine.lock.json",
     "feature_evidence.json",
     "frontend-file-summaries.txt",
     "frontend-implementation-plan.json",
-    "frontend/public/assets/generated/baby-laugh.dim_512x512.png",
-    "frontend/public/assets/generated/kiss-hearts.dim_256x256.png",
-    "frontend/public/assets/generated/run-streaks.dim_256x256.png",
-    "frontend/src/components/motion/BabyComedyLoginAnimation.tsx",
-    "frontend/src/index.css",
-    "frontend/src/pages/LoginPage.tsx",
-    "frontend/src/utils/motion.ts",
+    "frontend/src/App.tsx",
+    "frontend/src/components/StatusBadge.tsx",
+    "frontend/src/components/layout/AppLayout.tsx",
+    "frontend/src/components/nav/Navbar.tsx",
+    "frontend/src/components/routing/SectionRouteGuard.tsx",
+    "frontend/src/hooks/useAccessApprovals.ts",
+    "frontend/src/hooks/useSession.ts",
+    "frontend/src/pages/AdminPage.tsx",
+    "frontend/src/pages/HomePage.tsx",
+    "frontend/src/utils/accessApprovals.ts",
+    "frontend/src/utils/auth.ts",
+    "frontend/src/utils/seed.ts",
+    "frontend/src/utils/storage.ts",
     "project_state.json",
     "scratch/component-selection.json",
     "spec.md",

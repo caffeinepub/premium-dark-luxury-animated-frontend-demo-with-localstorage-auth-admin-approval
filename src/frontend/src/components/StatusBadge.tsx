@@ -1,29 +1,21 @@
-import { Badge } from './ui/badge';
-import { cn } from '../lib/utils';
-
 interface StatusBadgeProps {
-  status: 'pending' | 'approved' | 'rejected';
+  approved: boolean;
 }
 
-export default function StatusBadge({ status }: StatusBadgeProps) {
-  const variants = {
-    pending: {
-      className: 'bg-neon-blue/20 text-neon-blue border-neon-blue/50 shadow-neon-sm animate-pulse',
-      label: 'Awaiting Approval',
-    },
-    approved: {
-      className: 'bg-green-500/20 text-green-400 border-green-500/50',
-      label: 'Active',
-    },
-    rejected: {
-      className: 'bg-red-500/20 text-red-400 border-red-500/50',
-      label: 'Rejected',
-    },
-  };
-
-  const config = variants[status];
+export default function StatusBadge({ approved }: StatusBadgeProps) {
+  if (approved) {
+    return (
+      <span className="inline-flex items-center gap-1.5 rounded-full bg-green-500/20 px-3 py-1 text-xs font-medium text-green-400 border border-green-500/30">
+        <span className="h-1.5 w-1.5 rounded-full bg-green-400" />
+        Approved
+      </span>
+    );
+  }
 
   return (
-    <Badge className={cn('border', config.className)}>{config.label}</Badge>
+    <span className="inline-flex items-center gap-1.5 rounded-full bg-neon-blue/20 px-3 py-1 text-xs font-medium text-neon-blue border border-neon-blue/30 animate-pulse-glow">
+      <span className="h-1.5 w-1.5 rounded-full bg-neon-blue animate-pulse" />
+      Waiting for approval
+    </span>
   );
 }
