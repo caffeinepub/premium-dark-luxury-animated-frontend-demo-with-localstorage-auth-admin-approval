@@ -1,6 +1,6 @@
 import { ReactNode, useEffect } from 'react';
 import { useNavigate, useRouterState } from '@tanstack/react-router';
-import { useSession } from '../../hooks/useSession';
+import { useAuthzState } from '../../hooks/useAuthzState';
 import { buildLoginNavigation } from '../../utils/returnTo';
 
 interface SectionRouteGuardProps {
@@ -10,13 +10,11 @@ interface SectionRouteGuardProps {
 
 export default function SectionRouteGuard({ children, pageId }: SectionRouteGuardProps) {
   const navigate = useNavigate();
-  const { session, isLoading } = useSession();
+  const { isAuthenticated, isAdmin, hasPageAccess } = useAuthzState();
   const routerState = useRouterState();
 
   useEffect(() => {
-    if (isLoading) return;
-
-    if (!session) {
+    if (!isAuthenticated) {
       const { to, search } = buildLoginNavigation(
         routerState.location.pathname,
         routerState.location.search as Record<string, unknown>
@@ -26,34 +24,29 @@ export default function SectionRouteGuard({ children, pageId }: SectionRouteGuar
     }
 
     // Admin bypasses all page checks
-    if (session.role === 'admin') {
+    if (isAdmin) {
       return;
     }
 
     // Check if user has access to this page
-    if (!session.allowedPages.includes(pageId)) {
-      navigate({ 
+    if (!hasPageAccess(pageId)) {
+      navigate({
         to: '/',
-        search: { 
-          accessDenied: 'true', 
-          reason: `You do not have permission to access this page.`
-        }
+        search: {
+          accessDenied: 'true',
+          reason: `You do not have permission to access this page.`,
+        },
       });
     }
-  }, [session, isLoading, pageId, navigate, routerState.location.pathname, routerState.location.search]);
-
-  // Show nothing while loading
-  if (isLoading) {
-    return null;
-  }
+  }, [isAuthenticated, isAdmin, hasPageAccess, pageId, navigate, routerState.location.pathname, routerState.location.search]);
 
   // Admin always has access
-  if (session?.role === 'admin') {
+  if (isAdmin) {
     return <>{children}</>;
   }
 
   // Check access for regular users
-  if (session && session.allowedPages.includes(pageId)) {
+  if (isAuthenticated && hasPageAccess(pageId)) {
     return <>{children}</>;
   }
 

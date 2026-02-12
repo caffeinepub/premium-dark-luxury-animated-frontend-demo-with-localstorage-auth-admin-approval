@@ -1,8 +1,9 @@
 import { useState, FormEvent, useEffect } from 'react';
 import { useNavigate, useSearch } from '@tanstack/react-router';
 import { LogIn, Mail, Lock } from 'lucide-react';
-import { login } from '../utils/auth';
+import { useAuthzState } from '../hooks/useAuthzState';
 import { recordLogin } from '../utils/analytics';
+import { getUser } from '../utils/storage';
 import { Button } from '../components/ui/button';
 import { Input } from '../components/ui/input';
 import { Label } from '../components/ui/label';
@@ -20,6 +21,7 @@ export default function LoginPage() {
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const [registerModalOpen, setRegisterModalOpen] = useState(false);
+  const { setAuthzState, clearAuthzState } = useAuthzState();
 
   // Auto-open register modal if coming from /register redirect
   useEffect(() => {
@@ -28,29 +30,62 @@ export default function LoginPage() {
     }
   }, [search]);
 
-  const handleSubmit = (e: FormEvent) => {
+  const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
     setError('');
     setLoading(true);
 
-    const result = login(email, password);
-    
-    if (result.success) {
+    try {
+      // Simulate authentication - in production this would call Firebase Auth
+      // For now, validate against localStorage users (temporary until Firebase is added)
+      const user = getUser(email);
+
+      if (!user || user.password !== password) {
+        setError('Invalid email or password');
+        setLoading(false);
+        return;
+      }
+
+      // Simulate fetching Firestore user document
+      // In production: const userDoc = await getDoc(doc(db, 'users', user.uid));
+      const role = user.role;
+      const approved = user.approved;
+      const allowedPages = user.allowedPages;
+      const name = user.name;
+
+      // Block non-admin users who are not approved
+      if (role !== 'admin' && !approved) {
+        setError('Your account is waiting for admin approval.');
+        clearAuthzState();
+        setLoading(false);
+        return;
+      }
+
+      // Set authorization state in memory (not localStorage)
+      setAuthzState({
+        role,
+        approved,
+        allowedPages,
+        email: user.email,
+        name,
+      });
+
       // Record successful login in analytics
       recordLogin();
-      
+
       // Get the return-to destination
       const returnTo = getReturnTo(search);
       clearReturnTo();
-      
+
       // Navigate to the preserved destination or default to home
       const destination = returnTo && returnTo !== '/login' && returnTo !== '/register' ? returnTo : '/';
-      
+
       setTimeout(() => {
         navigate({ to: destination as any });
       }, 100);
-    } else {
-      setError(result.message);
+    } catch (err: any) {
+      console.error('Login error:', err);
+      setError('Login failed. Please try again.');
       setLoading(false);
     }
   };

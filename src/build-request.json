@@ -1,132 +1,70 @@
 {
   "kind": "build_request",
-  "title": "Add per-user approval + allowedPages-based route protection (minimal changes, no realtime)",
-  "priority": "normal",
+  "title": "Fix runtime crash by wrapping full app tree with AuthzProvider at the root entry",
+  "priority": "high",
   "requirements": [
     {
-      "id": "REQ-47",
-      "text": "Replace the current per-section access approval model with a single per-user permission model based on the user document fields `approved: boolean` and `allowedPages: string[]`, persisted in the existing localStorage user records (since the current project uses localStorage-backed auth/storage).",
+      "id": "REQ-58",
+      "text": "Ensure the entire React component tree is wrapped by `AuthzProvider` at the application root entry (root-level render), so that no component (Navbar, route guards, pages, etc.) can render outside the provider and trigger `useAuthzState must be used within an AuthzProvider`. Do not change the internal structure of `frontend/src/App.tsx`.",
       "target": "frontend",
       "source": {
         "messageIds": [
-          "msg-user"
+          "msg-6"
         ],
         "quotes": [
-          "User document structure example:\napproved: true or false\nallowedPages: [\"home\",\"intelus\",\"live\"]"
+          "Yes, proceed with moving AuthzProvider to the root level in main.jsx or index.js, wrapping BrowserRouter and App. Do not modify internal App.jsx structure."
         ]
       },
       "acceptanceCriteria": [
-        "Each non-admin user record in localStorage includes `approved` (boolean) and `allowedPages` (array of page IDs).",
-        "Existing status-based fields/logic (`status: pending/approved/rejected`) are removed or mapped consistently so the rest of the app no longer depends on the old status model.",
-        "Admin users continue to bypass page permission checks (admin has access to all internal pages)."
+        "The app no longer shows the runtime error: \"useAuthzState must be used within an AuthzProvider\".",
+        "`frontend/src/App.tsx` is not modified.",
+        "All routes (public and protected) render without throwing due to missing AuthzProvider."
       ]
     },
     {
-      "id": "REQ-48",
-      "text": "Update the login flow to follow: authenticate user credentials, fetch the user record from storage, check `approved`, load `allowedPages`, and establish a session that includes the computed permissions so the app can render navigation/routes accordingly.",
+      "id": "REQ-59",
+      "text": "Because `frontend/src/main.tsx` is an immutable path, implement the root-level provider wrapping by creating a new React entry file (e.g., `frontend/src/main.authz.tsx`) that mirrors the existing provider composition in `frontend/src/main.tsx` but adds `AuthzProvider` to wrap `App`, and then update `frontend/index.html` to load the new entry file instead of `./src/main.tsx`.",
       "target": "frontend",
       "source": {
         "messageIds": [
-          "msg-user"
+          "msg-6"
         ],
         "quotes": [
-          "Login flow:\n\nAuthenticate\n\nFetch user doc\n\nCheck approved\n\nLoad allowedPages\n\nRender routes based on that"
+          "proceed with moving AuthzProvider to the root level in main.jsx or index.js, wrapping BrowserRouter and App"
         ]
       },
       "acceptanceCriteria": [
-        "If credentials are invalid, login fails with the existing invalid-credentials message behavior.",
-        "If `approved` is false, login is blocked and shows the exact message: \"Your account is waiting for admin approval.\"",
-        "On successful login, the session/permission state is available immediately for Navbar visibility and route guards."
-      ]
-    },
-    {
-      "id": "REQ-49",
-      "text": "Ensure permissions are fetched/loaded on page refresh (no real-time listeners): on app load and whenever a session exists, re-load the current user's stored record and refresh the in-memory permission state used by the navbar and route guards.",
-      "target": "frontend",
-      "source": {
-        "messageIds": [
-          "msg-user"
-        ],
-        "quotes": [
-          "Ensure permissions are fetched on login and page refresh. Do not introduce real-time listeners or additional architectural changes."
-        ]
-      },
-      "acceptanceCriteria": [
-        "After a hard refresh, the user remains authenticated (if session exists) and the app re-evaluates `approved` and `allowedPages` from storage before rendering internal navigation items.",
-        "If an admin changes a user’s `allowedPages`, the change is reflected on the user’s next login or page refresh (without using any listener/subscription to external services)."
-      ]
-    },
-    {
-      "id": "REQ-50",
-      "text": "Enforce page-level authorization for all internal routes using `allowedPages`: update existing route guards so that if the current route’s page ID is not present in `allowedPages`, the user is redirected to a safe page (home) and an access-denied reason is surfaced via the existing accessDenied/search-param pattern.",
-      "target": "frontend",
-      "source": {
-        "messageIds": [
-          "msg-user"
-        ],
-        "quotes": [
-          "Route guard:\nIf page not in allowedPages → redirect to safe page"
-        ]
-      },
-      "acceptanceCriteria": [
-        "Unauthenticated users are still redirected to /login with the existing return-to behavior preserved.",
-        "Authenticated, approved, non-admin users who navigate directly to a disallowed URL are redirected to `/` with a clear access denied reason (English), and the protected page does not render.",
-        "All existing internal routes in `frontend/src/App.tsx` remain protected (no new public internal routes introduced)."
-      ]
-    },
-    {
-      "id": "REQ-51",
-      "text": "Update the authenticated Navbar to dynamically show only the links the user is authorized to access based on `allowedPages` (admin still sees Admin and all sections).",
-      "target": "frontend",
-      "source": {
-        "messageIds": [
-          "msg-user"
-        ],
-        "quotes": [
-          "After login, the application should retrieve the user’s assigned permissions and dynamically display only the pages they are authorized to access. Navigation menus should reflect these permissions."
-        ]
-      },
-      "acceptanceCriteria": [
-        "For non-admin users, each Navbar item is visible only if its corresponding page ID is present in `allowedPages`.",
-        "For admin users, the Navbar continues to show all internal links and the Admin link.",
-        "Logout remains visible and functional for all authenticated users."
-      ]
-    },
-    {
-      "id": "REQ-52",
-      "text": "Extend the existing Admin Panel user management to support: (1) an approve toggle bound to `approved`, and (2) a checkbox list for pages that writes `allowedPages` back to the stored user record, with a save/update action per user (no real-time behavior).",
-      "target": "frontend",
-      "source": {
-        "messageIds": [
-          "msg-user"
-        ],
-        "quotes": [
-          "Admin panel:\nUser list\nApprove toggle\nCheckbox list for pages\nSave updates to Firestore"
-        ]
-      },
-      "acceptanceCriteria": [
-        "Admin can view the user list and toggle `approved` for a user; changes persist to storage immediately.",
-        "Admin can select allowed pages via checkboxes (page IDs at minimum: home, intelus, videos, files, live, admin as applicable to current routes).",
-        "Saving updates persists `allowedPages` for that user and the UI reflects the saved state without requiring a full page refresh.",
-        "No real-time listeners are introduced (updates apply on the user’s next login/refresh per REQ-49)."
+        "`frontend/index.html` references the new entry module (not `./src/main.tsx`).",
+        "The new entry module wraps `<App />` with `<AuthzProvider>` above the router-rendered app content.",
+        "Existing root providers already used in `frontend/src/main.tsx` (React Query and Internet Identity providers) remain present and functional in the new entry module.",
+        "No changes are made to immutable file `frontend/src/main.tsx`."
       ]
     }
   ],
   "constraints": [
-    "Keep the existing project structure intact and modify only what is necessary to support approval and permission-based access control.",
-    "Do not introduce real-time listeners.",
-    "Apply permissions at the page level only (no sub-section permission model).",
-    "User-facing text must be in English.",
-    "Platform constraint: do not add or depend on Firebase Authentication or Firestore in this project (no third-party auth/database integrations available in this environment)."
+    "Do not modify the internal structure of `frontend/src/App.tsx` (no moving providers into App).",
+    "Do not edit immutable paths, including `frontend/src/main.tsx`.",
+    "Keep user-facing text in English."
   ],
   "nonGoals": [
-    "Migrating the app to Firebase Authentication / Firestore or adding Firestore security rules.",
-    "Implementing real-time permission propagation (listeners/subscriptions).",
-    "Adding sub-page/sub-section permissions beyond page-level allowedPages.",
-    "Adding new routes/pages solely for permissions management beyond extending the existing Admin Panel UI."
+    "Refactoring route definitions or switching routing libraries.",
+    "Changing visual design, layout, or animations.",
+    "Backend (Motoko) changes."
   ],
   "imageRequirements": {
     "required": [],
-    "edits": []
+    "edits": [
+      ""
+    ]
+  },
+  "userProfileUpdate": {
+    "goalsToAdd": [],
+    "goalsToRemove": [],
+    "preferencesToAdd": [],
+    "preferencesToRemove": [],
+    "miscToAdd": [],
+    "miscToRemove": [],
+    "fieldsToSet": {},
+    "fieldsToDelete": []
   }
 }

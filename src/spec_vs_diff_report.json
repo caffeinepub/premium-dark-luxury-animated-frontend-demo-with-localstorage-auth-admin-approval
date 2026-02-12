@@ -1,61 +1,30 @@
 {
   "kind": "spec_vs_diff_report",
   "version": "1.0",
-  "generatedAt": "2026-02-12T20:36:25.738Z",
-  "summary": "Most REQ-47..52 work appears implemented: localStorage User/Session now include approved + allowedPages; login blocks unapproved users with the exact message; permissions are reloaded on app start via useSession; routes are guarded with pageId-based checks that redirect unauthorized users to / with accessDenied + reason; Navbar hides links not in allowedPages; Admin UI includes approval toggling and per-user permission editing with persistence. One notable gap is the Admin Panel’s available page checkbox list missing some required page IDs (e.g., admin and “files” as specified). Several extra, non-requested UI/theme/infrastructure changes also appear in the diff summary (e.g., removing InternetIdentityProvider, adding diagnostics banner, large theme/CSS work).",
-  "missing_requirements": [
-    {
-      "id": "REQ-52",
-      "requirement": "Admin can select allowed pages via checkboxes including page IDs at minimum: home, intelus, videos, files, live, admin (as applicable to current routes).",
-      "reason": "The AdminPage’s AVAILABLE_PAGES list does not include an 'admin' page ID, and it uses 'myFiles'/'myVideos' instead of a 'files' page ID as explicitly listed in the acceptance criteria.",
-      "evidence": [
-        "frontend/src/pages/AdminPage.tsx"
-      ]
-    }
-  ],
+  "generatedAt": "2026-02-12T21:23:02.917Z",
+  "summary": "The diff adds a new React entry module (frontend/src/main.authz.tsx) that wraps <App /> with AuthzProvider (alongside QueryClientProvider and InternetIdentityProvider) and updates frontend/index.html to load this new entry file. No evidence in the diff indicates changes to frontend/src/App.tsx or the immutable frontend/src/main.tsx. However, the diff also introduces unrelated visual/UX changes in index.html (critical CSS) and modifies project_state.json, neither of which were requested.",
+  "missing_requirements": [],
   "hallucinated_features": [
     {
-      "description": "Removal of InternetIdentityProvider in the app entry point.",
-      "reason": "BuildRequest did not request any auth-provider removal/refactor; it specifically asked for minimal changes to support approval/allowedPages and no new third-party integrations.",
+      "description": "Added/changed critical inline CSS in index.html to prevent white flash on load (background/color styling). This is a visual/design change not requested and is listed as a non-goal.",
+      "reason": "BuildRequest explicitly lists changing visual design/layout/animations as non-goals; adding new global/critical CSS in the HTML entry is not necessary to wrap the app with AuthzProvider.",
       "evidence": [
-        "frontend-file-summaries.txt (frontend/src/main.tsx)"
+        "frontend/index.html"
       ]
     },
     {
-      "description": "Added ThemeDiagnosticsBanner and related diagnostics UI surfaced in the layout.",
-      "reason": "Not requested by BuildRequest; goes beyond the approval/permission scope.",
+      "description": "Modified project_state.json with scope/summary content unrelated to wrapping the app with AuthzProvider.",
+      "reason": "BuildRequest only asks for a new entry file and updating index.html; no requirement mentions changing project_state.json.",
       "evidence": [
-        "frontend/src/components/layout/AppLayout.tsx"
-      ]
-    },
-    {
-      "description": "Large-scale dark theme / styling system changes (global CSS, tailwind config extensions, glassmorphism components, motion utilities).",
-      "reason": "BuildRequest focuses on approval + allowedPages route protection with minimal changes; extensive theme/system UI work is out of scope.",
-      "evidence": [
-        "frontend-file-summaries.txt (frontend/src/index.css)",
-        "frontend-file-summaries.txt (frontend/tailwind.config.js)",
-        "frontend-file-summaries.txt (frontend/src/utils/motion.ts)",
-        "frontend-file-summaries.txt (frontend/src/components/ui/GlassCard.tsx)",
-        "frontend-file-summaries.txt (frontend/src/components/ui/PremiumCard.tsx)"
+        "project_state.json"
       ]
     }
   ],
-  "confidence": 0.72,
+  "confidence": 0.74,
   "changed_files": [
     "frontend-file-summaries.txt",
-    "frontend/src/App.tsx",
-    "frontend/src/components/StatusBadge.tsx",
-    "frontend/src/components/layout/AppLayout.tsx",
-    "frontend/src/components/nav/Navbar.tsx",
-    "frontend/src/components/routing/SectionRouteGuard.tsx",
-    "frontend/src/hooks/useAccessApprovals.ts",
-    "frontend/src/hooks/useSession.ts",
-    "frontend/src/pages/AdminPage.tsx",
-    "frontend/src/pages/HomePage.tsx",
-    "frontend/src/utils/accessApprovals.ts",
-    "frontend/src/utils/auth.ts",
-    "frontend/src/utils/seed.ts",
-    "frontend/src/utils/storage.ts",
+    "frontend/index.html",
+    "frontend/src/main.authz.tsx",
     "project_state.json"
   ]
 }

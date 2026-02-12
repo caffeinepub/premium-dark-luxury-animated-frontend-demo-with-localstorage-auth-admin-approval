@@ -1,7 +1,7 @@
 {
   "schemaVersion": "1.0.0",
-  "projectStateVersion": 21,
-  "summary": "Project scope is to keep the existing Firebase Authentication + Firestore backend and minimally extend the current app to implement secure admin approval and page-level authorization. Landing/Login/Register remain public; all internal routes require authentication plus Firestore-stored user approval (approved boolean) and per-page permissions (allowedPages array). Permissions are fetched on login and on page refresh (no real-time listeners) and drive both navigation visibility and route guards with safe redirects when unauthorized.",
+  "projectStateVersion": 25,
+  "summary": "Project scope is to keep the existing Firebase Authentication + Firestore backend and update the app to be fully Firestore-driven for authorization: admin detection uses Firestore user.role (no predefined admin email/password checks), and approval/page access use Firestore fields approved:boolean and allowedPages:string[]. After Firebase Auth login, fetch the user doc and store role/approved/allowedPages in application state (not localStorage) to drive dynamic navigation visibility and route guards with safe redirects. Firestore Security Rules are the primary enforcement for admin-only writes (user management/global content), with client-side checks only for UI/route protection; keep the UI layout unchanged and avoid unnecessary architectural changes.",
   "architectural_notes": [
     "Use React Router for routes and route protection; redirect unauthenticated to /login; restrict /admin to admin role.",
     "Use Framer Motion for consistent 0.5s transitions, hover states, and route/page animations.",
@@ -18,9 +18,10 @@
     "Admin page currently missing or not matching the specified premium animated navbar; needs to match prompt styling/animations.",
     "Authenticated navbar/top Logout is missing/inconsistent on admin and/or user pages (should match specified premium navbar behavior).",
     "Navbar layout overlap issue: ensure mobile view uses vertical layout and desktop uses horizontal layout without collisions/overflow.",
-    "Production/external deployment shows missing elements/colors/broken layouts vs dev environment; likely asset path/build/deploy configuration issues causing CSS/JS/resources not to load consistently."
+    "Production/external deployment shows missing elements/colors/broken layouts vs dev environment; likely asset path/build/deploy configuration issues causing CSS/JS/resources not to load consistently.",
+    "Runtime error: \"useAuthzState must be used within an AuthzProvider\" indicates AuthzProvider is not wrapping all components that call useAuthzState; fix by moving provider to root (main.jsx/index.js) above BrowserRouter/App."
   ],
-  "isFixRequest": false,
+  "isFixRequest": true,
   "existing_features": [
     {
       "id": "feature-implement-a-frontend-only-app-experience-no-backend-calls-no-server-side-state-no-external-databases-where-all-authentication-session-handling-and-admin-approval-logic-is-simulated-strictly-using-localstorage",
@@ -429,6 +430,62 @@
         "REQ-52"
       ],
       "version": 1
+    },
+    {
+      "id": "feature-update-the-login-flow-to-stop-using-localstorage-backed-credential-role-approval-permissions-logic-and-instead-1-sign-the-user-in-using-firebase-authentication-2-fetch-the-user-s-firestore-user-document-after-successful-auth-3-read-role-approved-and-allowedpages-from-that-document-and-4-store-these-values-in-in-memory-application-state-not-localstorage-for-the-active-session",
+      "title": "Update the login flow to stop using localStorage-backed credential/role/approval/permissions logic and instead: (1) sign the user in using Firebase Authentication, (2) fetch the user’s Firestore user document after successful auth, (3) read `role`, `approved`, and `allowedPages` from that document, and (4) store these values in in-memory application state (not localStorage) for the active session.",
+      "reqIds": [
+        "REQ-53"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-enforce-approval-and-permissions-using-firestore-fields-block-non-admin-users-whose-firestore-approved-is-false-from-establishing-an-authenticated-app-session-and-show-the-existing-blocked-login-messaging-behavior-english-admin-users-role-admin-must-not-be-blocked-by-approved-false",
+      "title": "Enforce approval and permissions using Firestore fields: block non-admin users whose Firestore `approved` is false from establishing an authenticated app session and show the existing blocked-login messaging behavior (English). Admin users (role=`admin`) must not be blocked by `approved=false`.",
+      "reqIds": [
+        "REQ-54"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-modify-route-protection-to-stop-reading-authorization-inputs-role-approved-allowedpages-from-localstorage-update-protectedroute-adminroute-and-sectionrouteguard-to-rely-exclusively-on-the-in-memory-application-authz-state-populated-from-firestore-role-approved-allowedpages",
+      "title": "Modify route protection to stop reading authorization inputs (role/approved/allowedPages) from localStorage. Update `ProtectedRoute`, `AdminRoute`, and `SectionRouteGuard` to rely exclusively on the in-memory application authz state populated from Firestore (role, approved, allowedPages).",
+      "reqIds": [
+        "REQ-55"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-update-the-authenticated-navbar-authorization-logic-to-stop-using-localstorage-derived-session-permissions-and-instead-use-the-in-memory-firestore-derived-authz-state-role-allowedpages-to-determine-which-navigation-items-to-render-do-not-change-the-visual-layout-or-styling-of-the-navbar",
+      "title": "Update the authenticated Navbar authorization logic to stop using localStorage-derived session/permissions and instead use the in-memory Firestore-derived authz state (role, allowedPages) to determine which navigation items to render. Do not change the visual layout or styling of the Navbar.",
+      "reqIds": [
+        "REQ-56"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-remove-or-bypass-localstorage-based-role-approval-permissions-session-plumbing-so-it-cannot-influence-authorization-decisions-anymore-specifically-ensure-that-frontend-src-hooks-usesession-ts-and-any-remaining-route-guard-callsites-do-not-refresh-derive-role-approved-or-allowedpages-from-frontend-src-utils-storage-ts-user-session-records",
+      "title": "Remove or bypass localStorage-based role/approval/permissions session plumbing so it cannot influence authorization decisions anymore. Specifically, ensure that `frontend/src/hooks/useSession.ts` and any remaining route-guard callsites do not refresh/derive `role`, `approved`, or `allowedPages` from `frontend/src/utils/storage.ts` user/session records.",
+      "reqIds": [
+        "REQ-57"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-ensure-the-entire-react-component-tree-is-wrapped-by-authzprovider-at-the-application-root-entry-root-level-render-so-that-no-component-navbar-route-guards-pages-etc-can-render-outside-the-provider-and-trigger-useauthzstate-must-be-used-within-an-authzprovider-do-not-change-the-internal-structure-of-frontend-src-app-tsx",
+      "title": "Ensure the entire React component tree is wrapped by `AuthzProvider` at the application root entry (root-level render), so that no component (Navbar, route guards, pages, etc.) can render outside the provider and trigger `useAuthzState must be used within an AuthzProvider`. Do not change the internal structure of `frontend/src/App.tsx`.",
+      "reqIds": [
+        "REQ-58"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-because-frontend-src-main-tsx-is-an-immutable-path-implement-the-root-level-provider-wrapping-by-creating-a-new-react-entry-file-e-g-frontend-src-main-authz-tsx-that-mirrors-the-existing-provider-composition-in-frontend-src-main-tsx-but-adds-authzprovider-to-wrap-app-and-then-update-frontend-index-html-to-load-the-new-entry-file-instead-of-src-main-tsx",
+      "title": "Because `frontend/src/main.tsx` is an immutable path, implement the root-level provider wrapping by creating a new React entry file (e.g., `frontend/src/main.authz.tsx`) that mirrors the existing provider composition in `frontend/src/main.tsx` but adds `AuthzProvider` to wrap `App`, and then update `frontend/index.html` to load the new entry file instead of `./src/main.tsx`.",
+      "reqIds": [
+        "REQ-59"
+      ],
+      "version": 1
     }
   ],
   "new_feature_requests": [
@@ -663,6 +720,12 @@
     {
       "id": "AR-42",
       "summary": "Extend existing Firebase-backed system with admin approval + page-level permissions: store approved (boolean) and allowedPages (array of page IDs) in each Firestore user doc; on login/refresh fetch user doc, block unapproved users, render nav/routes based on allowedPages, and enforce route guards redirecting unauthorized access to a safe page; implement approval toggle + allowedPages checkbox editor in existing Admin Panel (no real-time listeners, minimal architectural changes)",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-43",
+      "summary": "Remove all localStorage-based authorization (role/approved/allowedPages/expiry) and update only the Firebase login flow + route guards to fetch Firestore user.role/approved/allowedPages post-login, store in app state (not localStorage), and drive dynamic navigation + protected routes; enforce admin-only writes primarily via Firestore Security Rules without changing UI layout",
       "reqIds": [],
       "status": "pending"
     }

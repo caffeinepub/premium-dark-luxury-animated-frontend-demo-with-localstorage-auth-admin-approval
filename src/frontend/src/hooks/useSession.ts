@@ -1,56 +1,22 @@
-import { useState, useEffect } from 'react';
-import { getSession, subscribeToSessionChanges, getUser, setSession, type Session } from '../utils/storage';
+import { useAuthzState } from './useAuthzState';
 
+// Compatibility wrapper for existing code that uses useSession
+// Now delegates to the new in-memory authz state instead of localStorage
 export function useSession() {
-  const [session, setSessionState] = useState<Session | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
+  const { authzState, isAuthenticated } = useAuthzState();
 
-  useEffect(() => {
-    // Initial load: refresh permissions from storage
-    const currentSession = getSession();
-    
-    if (currentSession) {
-      const user = getUser(currentSession.email);
-      
-      if (user) {
-        // Check if user is still approved
-        if (!user.approved && user.role !== 'admin') {
-          // User no longer approved, clear session
-          setSessionState(null);
-          setIsLoading(false);
-          return;
-        }
-        
-        // Refresh session with latest permissions
-        const refreshedSession: Session = {
-          email: user.email,
-          name: user.name,
-          role: user.role,
-          allowedPages: user.allowedPages,
-        };
-        
-        // Update session in storage if permissions changed
-        if (JSON.stringify(currentSession.allowedPages) !== JSON.stringify(user.allowedPages)) {
-          setSession(refreshedSession);
-        }
-        
-        setSessionState(refreshedSession);
-      } else {
-        setSessionState(null);
+  // Map authzState to legacy session format for backward compatibility
+  const session = isAuthenticated
+    ? {
+        email: authzState.email || '',
+        name: authzState.name || '',
+        role: authzState.role || 'user',
+        allowedPages: authzState.allowedPages,
       }
-    } else {
-      setSessionState(null);
-    }
-    
-    setIsLoading(false);
+    : null;
 
-    // Subscribe to session changes
-    const unsubscribe = subscribeToSessionChanges((newSession) => {
-      setSessionState(newSession);
-    });
-
-    return unsubscribe;
-  }, []);
-
-  return { session, isLoading };
+  return {
+    session,
+    isLoading: false, // No longer async loading from localStorage
+  };
 }

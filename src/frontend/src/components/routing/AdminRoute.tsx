@@ -1,6 +1,6 @@
 import { ReactNode, useEffect } from 'react';
 import { useNavigate } from '@tanstack/react-router';
-import { getSession } from '../../utils/storage';
+import { useAuthzState } from '../../hooks/useAuthzState';
 
 interface AdminRouteProps {
   children: ReactNode;
@@ -8,15 +8,15 @@ interface AdminRouteProps {
 
 export default function AdminRoute({ children }: AdminRouteProps) {
   const navigate = useNavigate();
-  const session = getSession();
+  const { isAdmin } = useAuthzState();
 
   useEffect(() => {
-    if (session && session.role !== 'admin') {
+    if (!isAdmin) {
       navigate({ to: '/' });
     }
-  }, [session, navigate]);
+  }, [isAdmin, navigate]);
 
-  if (!session || session.role !== 'admin') {
+  if (!isAdmin) {
     return null;
   }
 

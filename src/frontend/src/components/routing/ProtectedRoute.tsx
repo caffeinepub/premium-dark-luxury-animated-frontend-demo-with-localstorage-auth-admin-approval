@@ -1,6 +1,6 @@
 import { ReactNode, useEffect } from 'react';
 import { useNavigate, useRouterState } from '@tanstack/react-router';
-import { getSession } from '../../utils/storage';
+import { useAuthzState } from '../../hooks/useAuthzState';
 import { recordPageVisit } from '../../utils/analytics';
 import { buildLoginNavigation } from '../../utils/returnTo';
 
@@ -10,11 +10,11 @@ interface ProtectedRouteProps {
 
 export default function ProtectedRoute({ children }: ProtectedRouteProps) {
   const navigate = useNavigate();
-  const session = getSession();
+  const { isAuthenticated } = useAuthzState();
   const routerState = useRouterState();
 
   useEffect(() => {
-    if (!session) {
+    if (!isAuthenticated) {
       const { to, search } = buildLoginNavigation(
         routerState.location.pathname,
         routerState.location.search as Record<string, unknown>
@@ -33,9 +33,9 @@ export default function ProtectedRoute({ children }: ProtectedRouteProps) {
         recordPageVisit('admin');
       }
     }
-  }, [session, navigate, routerState.location.pathname, routerState.location.search]);
+  }, [isAuthenticated, navigate, routerState.location.pathname, routerState.location.search]);
 
-  if (!session) {
+  if (!isAuthenticated) {
     return null;
   }
 

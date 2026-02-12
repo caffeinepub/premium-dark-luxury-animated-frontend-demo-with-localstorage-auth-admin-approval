@@ -1,146 +1,43 @@
 {
   "kind": "implementation_plan",
   "version": "1.0",
-  "title": "Per-user approval + allowedPages route protection (localStorage auth)",
+  "title": "Wrap app root render with AuthzProvider via new entry file to fix useAuthzState runtime crash",
   "requirements": [
     {
-      "id": "REQ-47",
-      "summary": "Replace section-based access approvals with per-user `approved` + `allowedPages` persisted in localStorage user records, with admin bypass.",
+      "id": "REQ-58",
+      "summary": "Ensure the entire React component tree renders within AuthzProvider at the root entry without modifying App.tsx",
       "acceptanceCriteria": [
-        "Each non-admin user record in localStorage includes `approved` (boolean) and `allowedPages` (array of page IDs).",
-        "Existing status-based fields/logic (`status: pending/approved/rejected`) are removed or mapped consistently so the rest of the app no longer depends on the old status model.",
-        "Admin users continue to bypass page permission checks (admin has access to all internal pages)."
+        "The app no longer shows the runtime error: \"useAuthzState must be used within an AuthzProvider\".",
+        "`frontend/src/App.tsx` is not modified.",
+        "All routes (public and protected) render without throwing due to missing AuthzProvider."
       ],
       "file_operations": [
         {
-          "path": "frontend/src/utils/storage.ts",
+          "path": "frontend/src/main.authz.tsx",
           "operation": "modify",
-          "description": "Update `User` and `Session` types to use `approved: boolean` and `allowedPages: string[]` (remove `status`). Add small helpers to read/update a single user record by email for admin updates and session refresh (keep localStorage keys and overall structure intact)."
-        },
-        {
-          "path": "frontend/src/utils/seed.ts",
-          "operation": "modify",
-          "description": "Update default seeded admin record to use `approved: true` and `allowedPages` granting all internal pages, ensuring admin continues to bypass checks."
-        },
-        {
-          "path": "frontend/src/utils/accessApprovals.ts",
-          "operation": "delete",
-          "description": "Remove the legacy per-section approvals storage and subscription utilities now replaced by `approved` + `allowedPages` on the user record."
-        },
-        {
-          "path": "frontend/src/hooks/useAccessApprovals.ts",
-          "operation": "delete",
-          "description": "Remove the legacy per-section access hook; page access should come from session `allowedPages` with admin bypass."
+          "description": "Ensure the root-level render wraps the entire application tree with `AuthzProvider` (from the authorization system used by `useAuthzState`) above any components that call `useAuthzState` (e.g., Navbar, route guards, layouts), while keeping the existing provider composition consistent with `frontend/src/main.tsx`. Verify the component's usage instructions before implementing."
         }
       ]
     },
     {
-      "id": "REQ-48",
-      "summary": "Update login to validate credentials, load the stored user record, enforce `approved`, and store session permissions for immediate navbar/guard use.",
+      "id": "REQ-59",
+      "summary": "Create a new React entry module that adds AuthzProvider and switch index.html to load it instead of the immutable main.tsx",
       "acceptanceCriteria": [
-        "If credentials are invalid, login fails with the existing invalid-credentials message behavior.",
-        "If `approved` is false, login is blocked and shows the exact message: \"Your account is waiting for admin approval.\"",
-        "On successful login, the session/permission state is available immediately for Navbar visibility and route guards."
+        "`frontend/index.html` references the new entry module (not `./src/main.tsx`).",
+        "The new entry module wraps `<App />` with `<AuthzProvider>` above the router-rendered app content.",
+        "Existing root providers already used in `frontend/src/main.tsx` (React Query and Internet Identity providers) remain present and functional in the new entry module.",
+        "No changes are made to immutable file `frontend/src/main.tsx`."
       ],
       "file_operations": [
         {
-          "path": "frontend/src/utils/auth.ts",
-          "operation": "modify",
-          "description": "Update `register` to create users with `approved: false` and a default `allowedPages` (likely minimal like `[\"home\"]` or empty per current app needs). Update `login` to: (1) authenticate credentials, (2) load user record, (3) block if `approved` is false with the exact required message, (4) set session including `allowedPages` so UI guards/nav can read it immediately."
+          "path": "frontend/src/main.authz.tsx",
+          "operation": "create",
+          "description": "Create a new React entry file that mirrors `frontend/src/main.tsx` provider setup (React Query `QueryClientProvider` and `InternetIdentityProvider`) and adds `AuthzProvider` to wrap `<App />` at the root render so no component can render outside it. Verify the component's usage instructions before implementing."
         },
         {
-          "path": "frontend/src/pages/LoginPage.tsx",
+          "path": "frontend/index.html",
           "operation": "modify",
-          "description": "Keep existing invalid-credentials behavior and wiring. Ensure the blocked-not-approved case surfaces the exact English message from the updated `login()` return value. Uses existing shadcn/ui components (Button/Input/Alert); verify the component's usage instructions before implementing."
-        }
-      ]
-    },
-    {
-      "id": "REQ-49",
-      "summary": "On app load/refresh, re-load the current user record from localStorage and refresh in-memory permission state used by navbar and guards (no realtime listeners).",
-      "acceptanceCriteria": [
-        "After a hard refresh, the user remains authenticated (if session exists) and the app re-evaluates `approved` and `allowedPages` from storage before rendering internal navigation items.",
-        "If an admin changes a user’s `allowedPages`, the change is reflected on the user’s next login or page refresh (without using any listener/subscription to external services)."
-      ],
-      "file_operations": [
-        {
-          "path": "frontend/src/hooks/useSession.ts",
-          "operation": "modify",
-          "description": "Enhance session initialization to re-hydrate/refresh permissions from the current user's stored record when a session exists (e.g., on first mount). If the user is no longer `approved`, clear session and trigger redirect behavior via existing guards. Avoid introducing any real-time subscription pattern beyond existing session-change event handling."
-        },
-        {
-          "path": "frontend/src/components/layout/AppLayout.tsx",
-          "operation": "modify",
-          "description": "Ensure navbar visibility does not flash unauthorized links: rely on the refreshed session state from `useSession()` so Navbar renders only after permissions are up to date."
-        }
-      ]
-    },
-    {
-      "id": "REQ-50",
-      "summary": "Protect all internal routes using `allowedPages` page IDs with admin bypass, redirecting disallowed navigation to home with accessDenied/reason search params.",
-      "acceptanceCriteria": [
-        "Unauthenticated users are still redirected to /login with the existing return-to behavior preserved.",
-        "Authenticated, approved, non-admin users who navigate directly to a disallowed URL are redirected to `/` with a clear access denied reason (English), and the protected page does not render.",
-        "All existing internal routes in `frontend/src/App.tsx` remain protected (no new public internal routes introduced)."
-      ],
-      "file_operations": [
-        {
-          "path": "frontend/src/components/routing/SectionRouteGuard.tsx",
-          "operation": "modify",
-          "description": "Repurpose the guard to page-level authorization: accept a `pageId: string` (or rename prop internally while keeping file minimal), read current session, allow admins, and for approved non-admin users enforce `allowedPages` membership. On denial, redirect to `/` with `accessDenied=true` and a clear English `reason` via the existing search-param pattern. Preserve unauthenticated redirect-to-login behavior using existing return-to helper."
-        },
-        {
-          "path": "frontend/src/components/routing/ProtectedRoute.tsx",
-          "operation": "modify",
-          "description": "Keep unauthenticated redirect behavior and return-to preservation intact. Update analytics page-id mapping as needed to include the internal pages currently tracked, without introducing new public routes."
-        },
-        {
-          "path": "frontend/src/App.tsx",
-          "operation": "modify",
-          "description": "Update all protected routes to use the page-level guard with the required page IDs (minimum: home, intelus, videos, files, live, admin as applicable to current routes). Ensure every internal route remains wrapped by `ProtectedRoute` and the updated guard; do not introduce new public internal routes."
-        }
-      ]
-    },
-    {
-      "id": "REQ-51",
-      "summary": "Update Navbar to show only links present in `allowedPages` for non-admin users, while admins see all internal links including Admin; logout always visible.",
-      "acceptanceCriteria": [
-        "For non-admin users, each Navbar item is visible only if its corresponding page ID is present in `allowedPages`.",
-        "For admin users, the Navbar continues to show all internal links and the Admin link.",
-        "Logout remains visible and functional for all authenticated users."
-      ],
-      "file_operations": [
-        {
-          "path": "frontend/src/components/nav/Navbar.tsx",
-          "operation": "modify",
-          "description": "Remove legacy section-access checks and instead derive visibility from `session.allowedPages` (admin bypass). Keep existing responsive layout, dropdown behavior, and logout behavior. Uses existing shadcn/ui components (Button/DropdownMenu); verify the component's usage instructions before implementing."
-        },
-        {
-          "path": "frontend/src/pages/HomePage.tsx",
-          "operation": "modify",
-          "description": "Optionally (minimal change) hide or disable navigation cards that the user is not allowed to access based on `session.allowedPages`, while keeping the accessDenied/reason alert behavior intact."
-        }
-      ]
-    },
-    {
-      "id": "REQ-52",
-      "summary": "Extend Admin Panel user management to edit `approved` and `allowedPages` via toggles/checkboxes and save updates to localStorage per user (no realtime).",
-      "acceptanceCriteria": [
-        "Admin can view the user list and toggle `approved` for a user; changes persist to storage immediately.",
-        "Admin can select allowed pages via checkboxes (page IDs at minimum: home, intelus, videos, files, live, admin as applicable to current routes).",
-        "Saving updates persists `allowedPages` for that user and the UI reflects the saved state without requiring a full page refresh.",
-        "No real-time listeners are introduced (updates apply on the user’s next login/refresh per REQ-49)."
-      ],
-      "file_operations": [
-        {
-          "path": "frontend/src/pages/AdminPage.tsx",
-          "operation": "modify",
-          "description": "Replace status-based user management with: (1) an `approved` toggle bound to the user record, and (2) an `allowedPages` checkbox list with a per-user Save/Update action that persists to localStorage. Remove per-section access controls (expiry dates and section approvals UI). Uses existing shadcn/ui components (Tabs/Table/Checkbox/Button/Input); verify the component's usage instructions before implementing."
-        },
-        {
-          "path": "frontend/src/components/StatusBadge.tsx",
-          "operation": "modify",
-          "description": "Update or simplify the badge to reflect `approved` boolean (e.g., Approved / Waiting for approval) so Admin UI no longer depends on `status: pending/approved/rejected`."
+          "description": "Update the module script to load `./src/main.authz.tsx` instead of `./src/main.tsx` so the application boots through the new root-level provider composition."
         }
       ]
     }

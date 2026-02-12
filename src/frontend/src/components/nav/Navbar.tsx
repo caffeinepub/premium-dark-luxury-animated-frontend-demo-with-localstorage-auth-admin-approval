@@ -1,8 +1,7 @@
 import { useState } from 'react';
 import { useNavigate } from '@tanstack/react-router';
 import { Home, Video, Briefcase, Shield, LogOut, ChevronDown, FileText, Film, Menu, X, Globe, Layers } from 'lucide-react';
-import { useSession } from '../../hooks/useSession';
-import { logout } from '../../utils/auth';
+import { useAuthzState } from '../../hooks/useAuthzState';
 import { Button } from '../ui/button';
 import {
   DropdownMenu,
@@ -13,12 +12,12 @@ import {
 
 export default function Navbar() {
   const navigate = useNavigate();
-  const { session } = useSession();
+  const { authzState, clearAuthzState, isAdmin, hasPageAccess } = useAuthzState();
   const [isTelusOpen, setIsTelusOpen] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   const handleLogout = () => {
-    logout();
+    clearAuthzState();
     setIsMobileMenuOpen(false);
     navigate({ to: '/login' });
   };
@@ -29,21 +28,16 @@ export default function Navbar() {
     setIsTelusOpen(false);
   };
 
-  if (!session) return null;
-
-  const isAdmin = session.role === 'admin';
-  const allowedPages = session.allowedPages;
+  if (!authzState.role) return null;
 
   // Check access for each page
-  const hasAccess = (pageId: string) => isAdmin || allowedPages.includes(pageId);
-
-  const homeAccess = hasAccess('home');
-  const videosAccess = hasAccess('videos');
-  const portfolioAccess = hasAccess('portfolio');
-  const myVideosAccess = hasAccess('myVideos');
-  const myFilesAccess = hasAccess('myFiles');
-  const intelusAccess = hasAccess('intelus');
-  const liveAccess = hasAccess('live');
+  const homeAccess = hasPageAccess('home');
+  const videosAccess = hasPageAccess('videos');
+  const portfolioAccess = hasPageAccess('portfolio');
+  const myVideosAccess = hasPageAccess('myVideos');
+  const myFilesAccess = hasPageAccess('myFiles');
+  const intelusAccess = hasPageAccess('intelus');
+  const liveAccess = hasPageAccess('live');
 
   return (
     <nav className="sticky top-0 z-50 w-full animate-slide-down border-b border-white/10 bg-luxury-dark/90 backdrop-blur-xl shadow-lg">
@@ -181,31 +175,28 @@ export default function Navbar() {
           </div>
 
           {/* Mobile Menu Toggle */}
-          <div className="flex lg:hidden items-center flex-shrink-0">
+          <div className="lg:hidden flex-shrink-0">
             <Button
               variant="ghost"
               size="sm"
-              className="text-white hover:text-neon-blue hover:bg-transparent"
+              className="text-white hover:text-neon-blue"
               onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-              aria-label="Toggle menu"
             >
               {isMobileMenuOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
             </Button>
           </div>
         </div>
-      </div>
 
-      {/* Mobile Menu - Vertical Stack */}
-      {isMobileMenuOpen && (
-        <div className="lg:hidden border-t border-white/10 bg-luxury-dark/95 backdrop-blur-xl animate-dropdown-open max-h-[calc(100vh-4rem)] overflow-y-auto">
-          <div className="flex flex-col gap-1 px-4 py-2">
+        {/* Mobile Menu */}
+        {isMobileMenuOpen && (
+          <div className="lg:hidden border-t border-white/10 py-4 space-y-2 animate-fade-in">
             {homeAccess && (
               <Button
                 variant="ghost"
-                className="nav-item justify-start text-white hover:text-neon-blue hover:bg-white/5 w-full"
+                className="w-full justify-start text-white hover:text-neon-blue hover:bg-white/5"
                 onClick={() => handleNavigation('/')}
               >
-                <Home className="mr-2 h-4 w-4 flex-shrink-0" />
+                <Home className="mr-2 h-4 w-4" />
                 Home
               </Button>
             )}
@@ -213,10 +204,10 @@ export default function Navbar() {
             {videosAccess && (
               <Button
                 variant="ghost"
-                className="nav-item justify-start text-white hover:text-neon-blue hover:bg-white/5 w-full"
+                className="w-full justify-start text-white hover:text-neon-blue hover:bg-white/5"
                 onClick={() => handleNavigation('/videos')}
               >
-                <Video className="mr-2 h-4 w-4 flex-shrink-0" />
+                <Video className="mr-2 h-4 w-4" />
                 Videos
               </Button>
             )}
@@ -224,10 +215,10 @@ export default function Navbar() {
             {portfolioAccess && (
               <Button
                 variant="ghost"
-                className="nav-item justify-start text-white hover:text-neon-blue hover:bg-white/5 w-full"
+                className="w-full justify-start text-white hover:text-neon-blue hover:bg-white/5"
                 onClick={() => handleNavigation('/portfolio')}
               >
-                <Briefcase className="mr-2 h-4 w-4 flex-shrink-0" />
+                <Briefcase className="mr-2 h-4 w-4" />
                 Portfolio
               </Button>
             )}
@@ -235,10 +226,10 @@ export default function Navbar() {
             {intelusAccess && (
               <Button
                 variant="ghost"
-                className="nav-item justify-start text-white hover:text-neon-blue hover:bg-white/5 w-full"
+                className="w-full justify-start text-white hover:text-neon-blue hover:bg-white/5"
                 onClick={() => handleNavigation('/intelus')}
               >
-                <Layers className="mr-2 h-4 w-4 flex-shrink-0" />
+                <Layers className="mr-2 h-4 w-4" />
                 Intelus
               </Button>
             )}
@@ -246,10 +237,10 @@ export default function Navbar() {
             {liveAccess && (
               <Button
                 variant="ghost"
-                className="nav-item justify-start text-white hover:text-neon-blue hover:bg-white/5 w-full"
+                className="w-full justify-start text-white hover:text-neon-blue hover:bg-white/5"
                 onClick={() => handleNavigation('/live')}
               >
-                <Globe className="mr-2 h-4 w-4 flex-shrink-0" />
+                <Globe className="mr-2 h-4 w-4" />
                 Live
               </Button>
             )}
@@ -257,10 +248,10 @@ export default function Navbar() {
             {myVideosAccess && (
               <Button
                 variant="ghost"
-                className="nav-item justify-start text-white hover:text-neon-blue hover:bg-white/5 w-full"
+                className="w-full justify-start text-white hover:text-neon-blue hover:bg-white/5"
                 onClick={() => handleNavigation('/my-videos')}
               >
-                <Film className="mr-2 h-4 w-4 flex-shrink-0" />
+                <Film className="mr-2 h-4 w-4" />
                 My Videos
               </Button>
             )}
@@ -268,10 +259,10 @@ export default function Navbar() {
             {myFilesAccess && (
               <Button
                 variant="ghost"
-                className="nav-item justify-start text-white hover:text-neon-blue hover:bg-white/5 w-full"
+                className="w-full justify-start text-white hover:text-neon-blue hover:bg-white/5"
                 onClick={() => handleNavigation('/my-files')}
               >
-                <FileText className="mr-2 h-4 w-4 flex-shrink-0" />
+                <FileText className="mr-2 h-4 w-4" />
                 My Files
               </Button>
             )}
@@ -279,27 +270,27 @@ export default function Navbar() {
             {isAdmin && (
               <Button
                 variant="ghost"
-                className="nav-item justify-start text-white hover:text-neon-blue hover:bg-white/5 w-full"
+                className="w-full justify-start text-white hover:text-neon-blue hover:bg-white/5"
                 onClick={() => handleNavigation('/admin')}
               >
-                <Shield className="mr-2 h-4 w-4 flex-shrink-0" />
+                <Shield className="mr-2 h-4 w-4" />
                 Admin
               </Button>
             )}
 
-            <div className="border-t border-white/10 my-1" />
-
-            <Button
-              variant="ghost"
-              className="nav-item justify-start text-white hover:text-red-400 hover:bg-white/5 w-full"
-              onClick={handleLogout}
-            >
-              <LogOut className="mr-2 h-4 w-4 flex-shrink-0" />
-              Logout
-            </Button>
+            <div className="pt-2 border-t border-white/10">
+              <Button
+                variant="ghost"
+                className="w-full justify-start text-white hover:text-red-400 hover:bg-white/5"
+                onClick={handleLogout}
+              >
+                <LogOut className="mr-2 h-4 w-4" />
+                Logout
+              </Button>
+            </div>
           </div>
-        </div>
-      )}
+        )}
+      </div>
     </nav>
   );
 }
